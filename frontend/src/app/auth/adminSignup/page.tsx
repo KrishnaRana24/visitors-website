@@ -1,11 +1,25 @@
 "use client";
-import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumb/Breadcrumb";
 import DefaultLayout from "@/components/Layout/DefaultLayout";
+import { updateAdminData } from "../../Slice/adminSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 const AdminSignup: React.FC = () => {
+  const dispatch = useDispatch();
+  const adminData = useSelector((state: RootState) => state.admin);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    dispatch(updateAdminData({ [name]: value }));
+  };
+
+  const handleClick = (e: React.FormEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+  };
+
   return (
     <DefaultLayout>
       <Breadcrumb pageName="Sign Up" />
@@ -174,6 +188,8 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
+                      value={adminData.name}
+                      onChange={handleChange}
                       type="text"
                       placeholder="Enter your full name"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -209,6 +225,7 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
+                      value={adminData.email}
                       type="email"
                       placeholder="Enter your email"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -239,6 +256,8 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
+                      value={adminData.phone}
+                      onChange={handleChange}
                       type="number"
                       placeholder="Enter your contact nuber"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -273,6 +292,8 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
+                      value={adminData.password}
+                      onChange={handleChange}
                       type="password"
                       placeholder="Enter your password"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -308,6 +329,8 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
+                      value={adminData.rpassword}
+                      onChange={handleChange}
                       type="password"
                       placeholder="Re-enter your password"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -342,6 +365,8 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
+                      value={adminData.photo}
+                      onChange={handleChange}
                       type="file"
                       placeholder="Enter your full name"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -371,11 +396,13 @@ const AdminSignup: React.FC = () => {
                   </div>
                 </div>
                 <div className="mb-5">
-                  <input
+                  <button
+                    onClick={handleClick}
                     type="submit"
-                    value="Create account"
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
-                  />
+                  >
+                    Create
+                  </button>
                 </div>
 
                 <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">

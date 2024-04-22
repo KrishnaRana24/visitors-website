@@ -2,15 +2,17 @@
 import express, { Router } from "express";
 import {
   adminSign,
-  uploadImage,
   adminLogin,
   protech,
+  uploadImage,
 } from "../controllers/adminAuth";
+const adminAuth = require("../controllers/adminAuth");
 
 const router: Router = express.Router();
 
-router.post("/adminauth", adminSign);
-router.post("/uploadfile", uploadImage);
-router.post("/adminlogin", adminLogin);
-router.use(protech);
+router.post("/adminauth", uploadImage, adminSign);
+// router.post("/uploadfile", uploadImage);
+router.post("/adminlogin", adminLogin, protech);
+router.use(adminAuth.protech);
+
 export default router;

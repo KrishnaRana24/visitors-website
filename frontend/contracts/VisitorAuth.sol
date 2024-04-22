@@ -8,6 +8,7 @@ contract VisitorAuth {
         string add;
         string phone;
         string purpose;
+        string types;
         string toMeet;
         string meetPersonemail;
         uint256 date;
@@ -27,6 +28,7 @@ contract VisitorAuth {
         string memory _address,
         string memory _phone,
         string memory _purpose,
+        string memory _types,
         string memory _toMeet,
         string memory _meetPersonemail,
         uint256 _date
@@ -37,6 +39,7 @@ contract VisitorAuth {
             add: _address,
             phone: _phone,
             purpose: _purpose,
+            types: _types,
             toMeet: _toMeet,
             meetPersonemail: _meetPersonemail,
             date: _date

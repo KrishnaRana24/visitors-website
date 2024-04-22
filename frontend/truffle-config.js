@@ -14,4 +14,11 @@ module.exports = {
       version: "0.8.19", // Fetch exact version from solc-bin (default: truffle's version)
     },
   },
+  migrations: {
+    // Specify the migrations directory and use ts-node for TypeScript migrations
+    directory: "./migrations",
+    // migrator: {
+    //   path: "./node_modules/.bin/ts-node", // Path to ts-node binary
+    // },
+  },
 };

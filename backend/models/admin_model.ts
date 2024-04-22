@@ -22,8 +22,8 @@ const adminSignupSchema = new Schema<AdminSignup>({
   phone: {
     type: Number,
     required: true,
+    unique: true,
     min: 10,
-    max: 10,
   },
   password: {
     type: String,

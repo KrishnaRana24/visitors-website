@@ -35,10 +35,10 @@ const createSendToken = (
 
 const multerStorage = multer.diskStorage({
   destination: function (req: any, file: any, cb: any) {
-    cb(null, "frontend/public/images/admin");
+    cb(null, "frontend/public/images/");
   },
   filename: function (req: any, file: any, cb: any) {
-    const filename = `${req.user.id}-${Date.now()}.jpeg`;
+    const filename = `${req.user.id}-${Date.now()}.png`;
     cb(null, filename);
   },
 });
@@ -61,11 +61,12 @@ export const uploadImage = upload.single("images");
 export const adminSign = async (req: Request, res: Response) => {
   try {
     const admin = new Admin(req.body);
-    if (!req.file) {
-      res.status(400).json({ message: "photo is not uploaded!!" });
-    }
+    // if (!req.file) {
+    //   res.status(400).json({ message: "photo is not uploaded!!" });
+    // }
+    const fileType = req.file?.mimetype;
     const create = await admin.save();
-    res.status(201).json({ create });
+    res.status(201).json({ create, fileType });
   } catch (error) {
     res.status(500).json({ message: error });
   }
@@ -84,7 +85,7 @@ export const adminLogin = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "invalid email or password" });
     }
     const token = Token(admininfo._id);
-    res.status(200).json({ token });
+    res.status(200).json({ token, admininfo });
   } catch (error) {
     res.status(500).json({ message: error });
   }

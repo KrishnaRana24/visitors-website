@@ -8,12 +8,6 @@ export default function HomePage() {
 
   // Function to handle login based on user role
   const handleLogin = (role: any) => {
-    // const isAdmin = true;
-    // if (isAdmin) {
-    //   router.push("/adminSignup");
-    // } else {
-    //   router.push("/heroSection");
-    // }
     if (role === "user") {
       router.push("/heroSection");
     } else if (role === "admin") {

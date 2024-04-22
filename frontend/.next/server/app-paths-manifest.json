@@ -1,7 +1,4 @@
 {
   "/page": "app/page.js",
-  "/auth/adminSignin/page": "app/auth/adminSignin/page.js",
-  "/auth/adminSignup/page": "app/auth/adminSignup/page.js",
-  "/heroSection/page": "app/heroSection/page.js",
   "/userSignup/page": "app/userSignup/page.js"
 }
