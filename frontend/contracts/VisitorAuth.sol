@@ -15,6 +15,7 @@ contract VisitorAuth {
     }
 
     mapping(address => Visitor) public visitors;
+    address[] public visitorAddresses; // Store visitor addresses separately for easy retrieval
 
     event VisitorRegistered(
         address indexed visitorAddress,
@@ -44,7 +45,7 @@ contract VisitorAuth {
             meetPersonemail: _meetPersonemail,
             date: _date
         });
-
+        visitorAddresses.push(msg.sender);
         emit VisitorRegistered(msg.sender, _name, _date);
     }
 
@@ -52,5 +53,13 @@ contract VisitorAuth {
         address _visitorAddress
     ) public view returns (Visitor memory) {
         return visitors[_visitorAddress];
+    }
+
+    function getAllVisitors() public view returns (Visitor[] memory) {
+        Visitor[] memory allVisitors = new Visitor[](visitorAddresses.length);
+        for (uint256 i = 0; i < visitorAddresses.length; i++) {
+            allVisitors[i] = visitors[visitorAddresses[i]];
+        }
+        return allVisitors;
     }
 }

@@ -1,31 +1,38 @@
 "use client";
-import React, { useState } from "react";
+import Web3 from "web3";
+import { Contract } from "web3-eth-contract";
+import { AbiItem } from "web3-utils";
+import React, { useEffect, useState } from "react";
+// import VisitorAuth from "../../../public/contracts/VisitorAuth.json";
+
+interface VisitorData {
+  name: string;
+  email: string;
+  add: string;
+  phone: string;
+  purpose: string;
+  types: string;
+  toMeet: string;
+  meetPersonemail: string;
+  date: number;
+}
 
 const VisitorAuth: React.FC = () => {
-  const [personalData, setPersonalData] = useState({
+  const [web3, setWeb3] = useState<Web3 | null>(null);
+  const [contract, setContract] = useState<Contract<AbiItem[]> | null>(null);
+
+  const [visitingData, setVisitingData] = useState({
     name: "",
     email: "",
     address: "",
     phone: "",
-  });
-
-  const [visitingData, setVisitingData] = useState({
     purpose: "",
     type: "",
     tomeet: "",
     meetPersonEmail: "",
     date: "",
+    visitorAddress: "",
   });
-
-  const handlePersonalChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setPersonalData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
 
   const handleVisitingChange = (
     e: React.ChangeEvent<
@@ -39,23 +46,124 @@ const VisitorAuth: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    console.log("Initializing contract...");
+
+    const initializeContract = async () => {
+      try {
+        // Initialize web3 and load contract ABI
+        const web3Instance = new Web3("http://127.0.0.1:7545");
+        setWeb3(web3Instance);
+        const contractJson = require("/public/contracts/VisitorAuth.json");
+
+        const contractInstance = new web3Instance.eth.Contract(
+          contractJson.abi,
+          "0x6bDc6CC761bcd7440Daac84B7C646D2e352711aC" // Contract address
+        );
+
+        // Set the contract instance in the state
+        setContract(contractInstance);
+
+        console.log("Contract initialized successfully.");
+      } catch (error) {
+        console.error("Error initializing contract:", error);
+      }
+    };
+
+    initializeContract();
+  }, []);
+
+  const handleButtonClick: React.MouseEventHandler<HTMLButtonElement> = async (
+    e
+  ) => {
     e.preventDefault();
-    // Add your form submission logic here (e.g., send data to server)
-    console.log({ ...personalData, ...visitingData });
+
+    try {
+      // Ensure contract and data are available
+      if (!contract || !visitingData) {
+        console.error("Contract or data is not available.");
+        return;
+      }
+
+      const accounts = await web3?.eth.getAccounts();
+      if (!accounts || accounts.length === 0) {
+        console.error("No accounts found.");
+        return;
+      }
+
+      // Convert the date string to a Unix timestamp (uint256)
+      const dateTimestamp = Date.parse(visitingData.date) / 1000; // Convert milliseconds to seconds
+      if (isNaN(dateTimestamp)) {
+        console.error("Invalid date format.");
+        return;
+      }
+
+      const gas = await contract.methods
+        .registerVisitor(
+          visitingData.name,
+          visitingData.email,
+          visitingData.address,
+          visitingData.phone,
+          visitingData.purpose,
+          visitingData.type,
+          visitingData.tomeet,
+          visitingData.meetPersonEmail,
+          dateTimestamp,
+          visitingData.visitorAddress
+        )
+        .estimateGas({ from: accounts[0] });
+
+      const gasLimit: string = gas.toString(); // Convert bigint to string
+
+      const transaction = await contract.methods
+        .registerVisitor(
+          visitingData.name,
+          visitingData.email,
+          visitingData.address,
+          visitingData.phone,
+          visitingData.purpose,
+          visitingData.type,
+          visitingData.tomeet,
+          visitingData.meetPersonEmail,
+          dateTimestamp,
+          visitingData.visitorAddress
+        )
+        .send({ from: accounts[0], gas: gasLimit });
+
+      console.log(
+        "Transaction hash:",
+        transaction,
+        transaction.transactionHash
+      );
+      console.log("Data stored successfully on the blockchain.");
+      // Get the visitor address from the transaction receipt
+      const visitorAddress =
+        transaction.events?.VisitorRegistered.returnValues.visitorAddress;
+      console.log(visitorAddress);
+
+      // Update state with the visitor address
+      if (visitorAddress) {
+        setVisitingData((prevData) => ({
+          ...prevData,
+          visitorAddress: visitorAddress.toString(),
+        }));
+      }
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 m-10 flex justify-center items-center flex-col w-600">
+    <div className="min-h-screen  text-black m-10 flex justify-center items-center flex-col w-600">
       <h2 className="text-3xl font-bold mb-8">Visitor Information Form</h2>
-      <div className="max-w-md w-full bg-white p-10 rounded shadow-md grid grid-cols-2 gap-8">
+      <div className="max-w-md w-full bg-purple-200 p-10 rounded shadow-md grid grid-cols-2 gap-8">
         <div>
           <h3 className="text-lg font-semibold mb-2">Personal Details</h3>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form className="space-y-6">
             <div>
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-black"
               >
                 Name
               </label>
@@ -63,8 +171,8 @@ const VisitorAuth: React.FC = () => {
                 type="text"
                 id="name"
                 name="name"
-                value={personalData.name}
-                onChange={handlePersonalChange}
+                value={visitingData.name}
+                onChange={handleVisitingChange}
                 className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                 required
               />
@@ -72,7 +180,7 @@ const VisitorAuth: React.FC = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium  text-black"
               >
                 Email
               </label>
@@ -80,8 +188,8 @@ const VisitorAuth: React.FC = () => {
                 type="email"
                 id="email"
                 name="email"
-                value={personalData.email}
-                onChange={handlePersonalChange}
+                value={visitingData.email}
+                onChange={handleVisitingChange}
                 className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                 required
               />
@@ -89,15 +197,15 @@ const VisitorAuth: React.FC = () => {
             <div>
               <label
                 htmlFor="address"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium  text-black"
               >
                 Address
               </label>
               <textarea
                 id="address"
                 name="address"
-                value={personalData.address}
-                onChange={handlePersonalChange}
+                value={visitingData.address}
+                onChange={handleVisitingChange}
                 rows={3}
                 className="mt-1 p-3 border border-gray-300 rounded w-full resize-none focus:outline-none focus:ring focus:ring-blue-500"
                 required
@@ -106,7 +214,7 @@ const VisitorAuth: React.FC = () => {
             <div>
               <label
                 htmlFor="phone"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium  text-black"
               >
                 Phone Number
               </label>
@@ -114,8 +222,8 @@ const VisitorAuth: React.FC = () => {
                 type="tel"
                 id="phone"
                 name="phone"
-                value={personalData.phone}
-                onChange={handlePersonalChange}
+                value={visitingData.phone}
+                onChange={handleVisitingChange}
                 className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                 required
               />
@@ -124,11 +232,11 @@ const VisitorAuth: React.FC = () => {
         </div>
         <div>
           <h3 className="text-lg font-semibold mb-2">Visiting Details</h3>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form className="space-y-6">
             <div>
               <label
                 htmlFor="purpose"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium  text-black"
               >
                 Purpose of Visit
               </label>
@@ -145,7 +253,7 @@ const VisitorAuth: React.FC = () => {
             <div>
               <label
                 htmlFor="type"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium  text-black"
               >
                 Visitor Type:
               </label>
@@ -170,7 +278,7 @@ const VisitorAuth: React.FC = () => {
             <div>
               <label
                 htmlFor="tomeet"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium  text-black"
               >
                 To Meet
               </label>
@@ -187,7 +295,7 @@ const VisitorAuth: React.FC = () => {
             <div>
               <label
                 htmlFor="meetPersonEmail"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium  text-black"
               >
                 Meet Person Email
               </label>
@@ -204,7 +312,7 @@ const VisitorAuth: React.FC = () => {
             <div>
               <label
                 htmlFor="date"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium  text-black"
               >
                 Date of Visit
               </label>
@@ -220,8 +328,9 @@ const VisitorAuth: React.FC = () => {
             </div>
             <div>
               <button
-                type="submit"
-                className="w-full bg-blue-500 text-white py-3 px-6 rounded hover:bg-blue-600 transition duration-200"
+                onClick={handleButtonClick}
+                type="button"
+                className="w-full bg-purple-700 text-white py-3 px-6 rounded hover:bg-purple-950 transition duration-200"
               >
                 Submit
               </button>

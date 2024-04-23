@@ -29,7 +29,7 @@ const compileContract = (sourceCode: string) => {
 };
 
 // Connect to Ganache
-const web3 = new Web3("http://localhost:7545");
+const web3 = new Web3("http://127.0.0.1:7545");
 
 // Read the Solidity source code
 const sourceCode = fs.readFileSync("VisitorAuth.sol", "utf8");
