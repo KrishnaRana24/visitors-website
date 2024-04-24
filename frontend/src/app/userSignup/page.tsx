@@ -58,7 +58,7 @@ const VisitorAuth: React.FC = () => {
 
         const contractInstance = new web3Instance.eth.Contract(
           contractJson.abi,
-          "0x6bDc6CC761bcd7440Daac84B7C646D2e352711aC" // Contract address
+          "0x46fa8C6Ab96011c16D5f274074E1a6d1D778c804" // Contract address
         );
 
         // Set the contract instance in the state
@@ -137,15 +137,15 @@ const VisitorAuth: React.FC = () => {
       );
       console.log("Data stored successfully on the blockchain.");
       // Get the visitor address from the transaction receipt
-      const visitorAddress =
-        transaction.events?.VisitorRegistered.returnValues.visitorAddress;
-      console.log(visitorAddress);
+      const visitorId =
+        transaction.events?.VisitorRegistered?.returnValues?.visitorId;
+      console.log(visitorId);
 
       // Update state with the visitor address
-      if (visitorAddress) {
+      if (visitorId) {
         setVisitingData((prevData) => ({
           ...prevData,
-          visitorAddress: visitorAddress.toString(),
+          visitorAddress: visitorId.toString(),
         }));
       }
     } catch (error) {

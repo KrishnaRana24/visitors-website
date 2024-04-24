@@ -1,9 +1,11 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
+import mailSender from "../utils/sendMail";
 
 interface Otp extends Document {
-  otp: String;
+  otp: string;
   email: string;
-  phone: number;
+  createdAt: Date;
+  visitors: Types.ObjectId;
 }
 
 const OtpSchema = new Schema<Otp>({
@@ -13,16 +15,16 @@ const OtpSchema = new Schema<Otp>({
   email: {
     type: String,
     required: true,
-    unique: true,
   },
-  phone: {
-    type: Number,
-    required: true,
-    unique: true,
-    min: 10,
+  visitors: { type: Schema.Types.ObjectId, ref: "Visitor" },
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    expires: 60 * 5, // The document will be automatically deleted after 5 minutes of its creation time
   },
 });
 
-const Admin = model<Otp>("Admin", OtpSchema);
+const Otp = model<Otp>("Otp", OtpSchema);
 
-export default Admin;
+export default Otp;

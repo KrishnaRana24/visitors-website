@@ -105,39 +105,39 @@ interface CustomRequest extends Request {
   admin?: any | string;
 }
 
-export const protech = async (req: Request, res: Response, next: any) => {
-  try {
-    let token;
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
-    } else if (req.cookies.jwt && req.cookies.jwt !== "loggedOut") {
-      token = req.cookies.jwt;
-    }
-    if (!token) {
-      return res
-        .status(400)
-        .json({ message: "you are not login please login to get an access" });
-    }
-    //2.)verify token
-    const decode = jwt.verify(token, process.env.JWT_SECRET!);
+// export const protech = async (req: Request, res: Response, next: any) => {
+//   try {
+//     let token;
+//     if (
+//       req.headers.authorization &&
+//       req.headers.authorization.startsWith("Bearer")
+//     ) {
+//       token = req.headers.authorization.split(" ")[1];
+//     } else if (req.cookies.jwt && req.cookies.jwt !== "loggedOut") {
+//       token = req.cookies.jwt;
+//     }
+//     if (!token) {
+//       return res
+//         .status(400)
+//         .json({ message: "you are not login please login to get an access" });
+//     }
+//     //2.)verify token
+//     const decode = jwt.verify(token, process.env.JWT_SECRET!);
 
-    if (typeof decode === "string") {
-      throw new Error("Invalid token");
-    }
-    const currentAdmin = await Admin.findById(decode.id);
-    if (!currentAdmin) {
-      return res
-        .status(400)
-        .json({ message: "this token is not valid to belong admin" });
-    }
-    //req.admin = currentAdmin;
-    next();
-  } catch (error) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized please login to get an access" });
-  }
-};
+//     if (typeof decode === "string") {
+//       throw new Error("Invalid token");
+//     }
+//     const currentAdmin = await Admin.findById(decode.id);
+//     if (!currentAdmin) {
+//       return res
+//         .status(400)
+//         .json({ message: "this token is not valid to belong admin" });
+//     }
+//     //req.admin = currentAdmin;
+//     next();
+//   } catch (error) {
+//     return res
+//       .status(401)
+//       .json({ message: "Unauthorized please login to get an access" });
+//   }
+// };
