@@ -3,21 +3,20 @@ import mailSender from "../utils/sendMail";
 
 interface Otp extends Document {
   otp: string;
+  timestamp: Date;
+  visitors: Types.ObjectId;
   email: string;
   createdAt: Date;
-  visitors: Types.ObjectId;
 }
 
 const OtpSchema = new Schema<Otp>({
-  otp: {
-    type: String,
-  },
+  otp: String,
+  // timestamp: { type: Date, default: Date.now },
+  visitors: { type: Schema.Types.ObjectId, ref: "visitor" },
   email: {
     type: String,
-    required: true,
+    required: false,
   },
-  visitors: { type: Schema.Types.ObjectId, ref: "Visitor" },
-
   createdAt: {
     type: Date,
     default: Date.now,

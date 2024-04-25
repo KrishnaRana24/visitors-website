@@ -1,4 +1,3 @@
-import Adashboard from "@/components/Dashboard/page";
 import HeroSection from "@/components/HeroSection/page";
 
 import VisitorAuth from "./userSignup/page";
@@ -12,7 +11,6 @@ export default function Home() {
       {/* <VisitorAuth /> */}
       {/* <HeroSection /> */}
       <HomePage />
-      {/* <Adashboard /> */}
     </>
   );
 }

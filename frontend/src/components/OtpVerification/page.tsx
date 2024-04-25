@@ -1,0 +1,52 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
+
+const OTPVerification = () => {
+  const [otp, setOTP] = useState(["", "", "", "", "", ""]);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    inputRefs.current[0]?.focus(); // Focus on the first input box when component mounts
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const newOTP = [...otp];
+    newOTP[index] = e.target.value;
+    setOTP(newOTP);
+
+    if (index < otp.length - 1 && e.target.value !== "") {
+      inputRefs.current[index + 1]?.focus(); // Focus on the next input box if available
+    }
+  };
+
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className=" bg-purple-200 p-8 rounded shadow-lg">
+        <h2 className="text-black text-lg mb-4">
+          Please check your email for otp
+        </h2>
+        <h1 className="text-black font-semibold mb-4">Enter OTP</h1>
+        <div className="flex">
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              type="text"
+              maxLength={1}
+              className="w-12 h-12 text-3xl text-center m-2 border border-purple-300 rounded focus:outline-none focus:border-purple-800"
+              value={digit}
+              onChange={(e) => handleChange(e, index)}
+              ref={(input) => {
+                inputRefs.current[index] = input;
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OTPVerification;

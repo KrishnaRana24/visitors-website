@@ -4,6 +4,9 @@ import adminRoute from "./routes/admin_router";
 import visitorRouter from "./routes/visitor_router";
 import otpRouter from "./routes/otp_router";
 import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // MongoDB connection URI
 const mongodb_url = "mongodb://127.0.0.1:27017/visitorVaultdb";

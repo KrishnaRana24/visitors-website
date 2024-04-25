@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
 
 interface AdminState {
   name: string;
