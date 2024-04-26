@@ -12,7 +12,7 @@ dotenv.config();
 const mongodb_url = "mongodb://127.0.0.1:27017/visitorVaultdb";
 
 const app = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8001;
 // Connect to MongoDB
 mongoose
   .connect(mongodb_url)
@@ -20,7 +20,12 @@ mongoose
   .catch((err: any) => console.error("MongoDB connection error:", err));
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000/",
+  })
+);
+
 app.use(adminRoute);
 app.use(visitorRouter);
 app.use(otpRouter);

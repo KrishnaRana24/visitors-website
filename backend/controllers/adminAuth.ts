@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-// const Admin = require("../models/admin_model");
 import Admin from "../models/admin_model";
 import jwt from "jsonwebtoken";
 import multer from "multer";
+import path from "path";
 
 const Token = (id: any) => {
   let secretOrPrivateKey = process.env.JWT_SECRET || "fallbackSecretKey";
@@ -34,16 +34,19 @@ const createSendToken = (
 };
 
 const multerStorage = multer.diskStorage({
-  destination: function (req: any, file: any, cb: any) {
-    cb(null, "frontend/public/images/");
+  destination: function (req: Request, file: any, cb: any) {
+    // const uploadDir = path.join(__dirname, "public", "images");
+    cb(null, "/home/dev/blockchain/visitor-web/frontend/public/images/");
   },
-  filename: function (req: any, file: any, cb: any) {
-    const filename = `${req.user.id}-${Date.now()}.png`;
-    cb(null, filename);
+  filename: function (req: Request, file: any, cb: any) {
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+    );
   },
 });
 
-const multerFilter = (req: any, file: any, callback: any) => {
+const multerFilter = (req: Request, file: any, callback: any) => {
   if (file.mimetype.startsWith("images")) {
     callback(null, true);
   } else {
@@ -53,20 +56,61 @@ const multerFilter = (req: any, file: any, callback: any) => {
 
 const upload = multer({
   storage: multerStorage,
-  fileFilter: multerFilter,
+  limits: {
+    fileSize: 1000000, // 1000000 Bytes = 1 MB
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(png|jpg)$/)) {
+      // upload only png and jpg format
+      return cb(new Error("Please upload a Image"));
+    }
+    // console.log(fileFilter);
+
+    cb(null, true);
+  },
 });
 
-export const uploadImage = upload.single("images");
+export const uploadImage = upload.single("photo");
+
+// export const uploadImage = () => {
+//   try {
+//     //console.log(multerFilter);
+
+//     upload.single("photo");
+//     console.log("photo upload successfully");
+//   } catch (error) {
+//     console.log("photo is not uploaded");
+//   }
+// };
+
+export const getAdmin = async (req: Request, res: Response) => {
+  let data;
+  try {
+    data = await Admin.find();
+  } catch (error) {
+    console.log(error);
+  }
+  if (!data) {
+    return res.status(400).json({ message: "no admin data found!!" });
+  }
+  return res.status(200).json({ data });
+};
 
 export const adminSign = async (req: Request, res: Response) => {
   try {
+    // console.log("fsdg");
+
     const admin = new Admin(req.body);
-    // if (!req.file) {
-    //   res.status(400).json({ message: "photo is not uploaded!!" });
-    // }
-    const fileType = req.file?.mimetype;
+    // console.log(req.body);
+
+    if (req.file) {
+      res.status(400).json({ message: "photo is not uploaded!!" });
+    }
+
     const create = await admin.save();
-    res.status(201).json({ create, fileType });
+    console.log(create);
+
+    res.status(201).json({ create });
   } catch (error) {
     res.status(500).json({ message: error });
   }

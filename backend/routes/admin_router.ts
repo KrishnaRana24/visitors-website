@@ -5,13 +5,15 @@ import {
   adminLogin,
   // protech,
   uploadImage,
+  getAdmin,
 } from "../controllers/adminAuth";
 const adminAuth = require("../controllers/adminAuth");
 
 const router: Router = express.Router();
 
-router.post("/adminauth", uploadImage, adminSign);
-// router.post("/uploadfile", uploadImage);
+router.post("/adminauth", adminSign);
+router.get("/getdata", getAdmin);
+router.post("/uploadPhoto", uploadImage);
 router.post("/adminlogin", adminLogin);
 // router.use(adminAuth.protech);
 

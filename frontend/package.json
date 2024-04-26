@@ -24,6 +24,7 @@
     "react-apexcharts": "^1.4.1",
     "react-dom": "^18",
     "react-redux": "^9.1.1",
+    "redux-thunk": "^3.1.0",
     "swr": "^2.2.5",
     "truffle": "^5.7.3",
     "web3": "^4.7.0",

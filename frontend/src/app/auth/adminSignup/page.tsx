@@ -3,27 +3,65 @@ import Link from "next/link";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumb/Breadcrumb";
 import DefaultLayout from "@/components/Layout/DefaultLayout";
-import { updateAdminData } from "../../Slice/adminSlice";
+import { addAdmin, createAdmin } from "../../Slice/adminSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
+import { ChangeEvent, FormEvent, useState } from "react";
 
 const AdminSignup: React.FC = () => {
   const dispatch = useDispatch();
-  const adminData = useSelector((state: RootState) => state.admin);
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    rpassword: string;
+    photo: string | null;
+  }>({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    rpassword: "",
+    photo: null,
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e);
-
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log(name);
-    // console.log(value);
-
-    dispatch(updateAdminData({ [name]: value }));
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
   };
 
-  const handleClick = (e: React.FormEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    try {
+      // Dispatch action to store data in MongoDB
+      await dispatch(addAdmin(formData));
+      console.log("Admin created successfully");
+    } catch (error) {
+      console.error("Error creating admin:", error);
+    }
   };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        const fileDataURL = fileReader.result as string;
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          photo: fileDataURL,
+        }));
+      };
+      fileReader.readAsDataURL(file);
+    }
+  };
+
+  // const handleFetchData = () => {
+  //   dispatch(fetchAdminData()); // Dispatch action to fetch data from backend API
+  // };
 
   return (
     <DefaultLayout>
@@ -186,15 +224,16 @@ const AdminSignup: React.FC = () => {
                 Sign Up to VisitorVault
               </h2>
 
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Name
                   </label>
                   <div className="relative">
                     <input
-                      value={adminData.name}
+                      value={formData.name}
                       onChange={handleChange}
+                      name="name"
                       type="text"
                       placeholder="Enter your full name"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -230,7 +269,9 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
-                      value={adminData.email}
+                      value={formData.email}
+                      onChange={handleChange}
+                      name="email"
                       type="email"
                       placeholder="Enter your email"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -261,8 +302,9 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
-                      value={adminData.phone}
+                      value={formData.phone}
                       onChange={handleChange}
+                      name="phone"
                       type="number"
                       placeholder="Enter your contact nuber"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -297,8 +339,9 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
-                      value={adminData.password}
+                      value={formData.password}
                       onChange={handleChange}
+                      name="password"
                       type="password"
                       placeholder="Enter your password"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -334,8 +377,9 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
-                      value={adminData.rpassword}
+                      value={formData.rpassword}
                       onChange={handleChange}
+                      name="rpassword"
                       type="password"
                       placeholder="Re-enter your password"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -370,8 +414,8 @@ const AdminSignup: React.FC = () => {
                   </label>
                   <div className="relative">
                     <input
-                      value={adminData.photo}
-                      onChange={handleChange}
+                      onChange={handleFileChange}
+                      name="photo"
                       type="file"
                       placeholder="Enter your full name"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -402,8 +446,8 @@ const AdminSignup: React.FC = () => {
                 </div>
                 <div className="mb-5">
                   <button
-                    onClick={handleClick}
                     type="submit"
+                    onClick={() => console.log(formData)}
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
                   >
                     Create
