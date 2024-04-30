@@ -1,14 +1,15 @@
 import { Schema, model, Document } from "mongoose";
+import moment from "moment";
 
 interface VisitorDocument extends Document {
   name: string;
-  address: string;
+  add: string;
   email: string;
   phone: Number;
   purpose: string;
   types: string;
-  tomeet: string;
-  meetPersonEmail: string;
+  toMeet: string;
+  meetPersonemail: string;
   date: Date;
 }
 
@@ -17,30 +18,32 @@ const VisitorSignupSchema = new Schema<VisitorDocument>({
     type: String,
     required: true,
   },
-  address: {
-    type: String,
-    required: true,
-  },
   email: {
     type: String,
     required: true,
-    unique: true,
+  },
+  add: {
+    type: String,
+    required: true,
   },
   phone: {
-    type: Number,
+    type: String,
     required: true,
-    unique: true,
     min: 10,
   },
   purpose: {
     type: String,
     required: true,
   },
-  tomeet: {
+  types: {
     type: String,
     required: true,
   },
-  meetPersonEmail: {
+  toMeet: {
+    type: String,
+    required: true,
+  },
+  meetPersonemail: {
     type: String,
     required: true,
   },
@@ -48,6 +51,12 @@ const VisitorSignupSchema = new Schema<VisitorDocument>({
     type: Date,
     required: true,
   },
+});
+
+VisitorSignupSchema.pre<VisitorDocument>("save", function (next) {
+  // Format date to "dd/mm/yyyy"
+  this.date = moment(this.date).toDate();
+  next();
 });
 
 const Visitor = model<VisitorDocument>("visitor", VisitorSignupSchema);

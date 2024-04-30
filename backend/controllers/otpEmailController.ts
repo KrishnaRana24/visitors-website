@@ -18,7 +18,7 @@ var transport = nodemailer.createTransport({
 // sending mail
 export const sendMail = async (option: {
   email: any;
-  meetpersonemail: any;
+  meetPersonemail: any;
   subject: any;
   message: any;
   meetpersonmessage: any;
@@ -34,7 +34,7 @@ export const sendMail = async (option: {
   // Define email options for second email
   const mailOption2 = {
     from: "rana.krishna.dcs24@vnsgu.ac.in",
-    to: option.meetpersonemail,
+    to: option.meetPersonemail,
     subject: option.subject,
     text: option.meetpersonmessage,
   };
@@ -76,10 +76,11 @@ export const generateOtp = async (req: Request, res: Response) => {
 
     const otpData = new OTP({ otp, visitor });
     await otpData.save();
+    console.log("otpData----", otpData);
 
     await sendMail({
       email: visitor?.email,
-      meetpersonemail: req.body.meetpersonemail,
+      meetPersonemail: req.body.meetpersonemail,
       subject: "OTP for meeting Invitation",
       message,
       meetpersonmessage,
@@ -96,21 +97,21 @@ export const generateOtp = async (req: Request, res: Response) => {
 };
 
 //verify otp and after delete
-// export const verifyOtp = async (req: Request, res: Response) => {
-//   const { visitor, otp } = req.body;
-//   console.log("visitor--", visitor);
-//   console.log("visitor otp --", otp);
+export const verifyOtp = async (req: Request, res: Response) => {
+  const { visitor, otp } = req.body;
+  console.log("visitor--", visitor);
+  console.log("visitor otp --", otp);
 
-//   const storedOTP = await OTP.find({ otp });
-//   console.log(storedOTP);
+  const storedOTP = await OTP.find({ otp });
+  console.log(storedOTP);
 
-//   if (!storedOTP) {
-//     return res.status(400).json({ message: "OTP not found for the visitor" });
-//   } else {
-//     res.send({ message: "OTP verification successful" });
-//   }
-//   await OTP.deleteOne({ storedOTP });
-//   return res.json({ message: "successfully deleted!" });
-// };
+  if (!storedOTP) {
+    return res.status(400).json({ message: "OTP not found for the visitor" });
+  } else {
+    res.send({ message: "OTP verification successful" });
+  }
+  await OTP.deleteOne({ storedOTP });
+  return res.json({ message: "successfully deleted!" });
+};
 
 // mail to meetPerson

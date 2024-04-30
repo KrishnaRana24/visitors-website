@@ -3,48 +3,28 @@ import Web3 from "web3";
 import { Contract } from "web3-eth-contract";
 import { AbiItem } from "web3-utils";
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import otpGenerator from "otp-generator";
 // import VisitorAuth from "../../../public/contracts/VisitorAuth.json";
 
-interface VisitorData {
-  name: string;
-  email: string;
-  add: string;
-  phone: string;
-  purpose: string;
-  types: string;
-  toMeet: string;
-  meetPersonemail: string;
-  date: number;
-}
-
 const VisitorAuth: React.FC = () => {
+  const router = useRouter();
   const [web3, setWeb3] = useState<Web3 | null>(null);
   const [contract, setContract] = useState<Contract<AbiItem[]> | null>(null);
 
   const [visitingData, setVisitingData] = useState({
     name: "",
     email: "",
-    address: "",
+    add: "",
     phone: "",
     purpose: "",
-    type: "",
-    tomeet: "",
-    meetPersonEmail: "",
+    types: "",
+    toMeet: "",
+    meetPersonemail: "",
     date: "",
     visitorAddress: "",
   });
-
-  const handleVisitingChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setVisitingData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
 
   useEffect(() => {
     console.log("Initializing contract...");
@@ -73,12 +53,26 @@ const VisitorAuth: React.FC = () => {
     initializeContract();
   }, []);
 
+  const handleVisitingChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setVisitingData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
   const handleButtonClick: React.MouseEventHandler<HTMLButtonElement> = async (
     e
   ) => {
     e.preventDefault();
 
     try {
+      // console.log("asfsdfx");
+
       // Ensure contract and data are available
       if (!contract || !visitingData) {
         console.error("Contract or data is not available.");
@@ -97,57 +91,86 @@ const VisitorAuth: React.FC = () => {
         console.error("Invalid date format.");
         return;
       }
+      try {
+        const response = await axios.post(
+          "http://localhost:8001/visitorSignup",
+          {
+            ...visitingData,
+            dateTimestamp, // Include dateTimestamp in the data sent to the server
+          }
+        );
+        console.log("Response from server:", response.data);
 
-      const gas = await contract.methods
-        .registerVisitor(
-          visitingData.name,
-          visitingData.email,
-          visitingData.address,
-          visitingData.phone,
-          visitingData.purpose,
-          visitingData.type,
-          visitingData.tomeet,
-          visitingData.meetPersonEmail,
-          dateTimestamp,
-          visitingData.visitorAddress
-        )
-        .estimateGas({ from: accounts[0] });
+        const visitorId = response.data.visitorId;
 
-      const gasLimit: string = gas.toString(); // Convert bigint to string
+        const gas = await contract.methods
+          .registerVisitor(
+            visitingData.name,
+            visitingData.email,
+            visitingData.add,
+            visitingData.phone,
+            visitingData.purpose,
+            visitingData.types,
+            visitingData.toMeet,
+            visitingData.meetPersonemail,
+            dateTimestamp,
+            visitingData.visitorAddress
+          )
+          .estimateGas({ from: accounts[0] });
 
-      const transaction = await contract.methods
-        .registerVisitor(
-          visitingData.name,
-          visitingData.email,
-          visitingData.address,
-          visitingData.phone,
-          visitingData.purpose,
-          visitingData.type,
-          visitingData.tomeet,
-          visitingData.meetPersonEmail,
-          dateTimestamp,
-          visitingData.visitorAddress
-        )
-        .send({ from: accounts[0], gas: gasLimit });
+        const gasLimit: string = gas.toString(); // Convert bigint to string
 
-      console.log(
-        "Transaction hash:",
-        transaction,
-        transaction.transactionHash
-      );
-      console.log("Data stored successfully on the blockchain.");
-      // Get the visitor address from the transaction receipt
-      const visitorId =
-        transaction.events?.VisitorRegistered?.returnValues?.visitorId;
-      console.log(visitorId);
+        const transaction = await contract.methods
+          .registerVisitor(
+            visitingData.name,
+            visitingData.email,
+            visitingData.add,
+            visitingData.phone,
+            visitingData.purpose,
+            visitingData.types,
+            visitingData.toMeet,
+            visitingData.meetPersonemail,
+            dateTimestamp,
+            visitingData.visitorAddress
+          )
+          .send({ from: accounts[0], gas: gasLimit });
 
-      // Update state with the visitor address
-      if (visitorId) {
-        setVisitingData((prevData) => ({
-          ...prevData,
-          visitorAddress: visitorId.toString(),
-        }));
+        console.log(
+          "Transaction hash:",
+          transaction,
+          transaction.transactionHash
+        );
+        console.log("Data stored successfully on the blockchain.");
+
+        const otpResponse = await axios.post(
+          "http://localhost:8001/generateOtp",
+          {
+            visitorId,
+            email: visitingData.email,
+            meetPersonemail: visitingData.meetPersonemail,
+          }
+        );
+
+        console.log("OTP generated and sent successfully:", otpResponse.data);
+      } catch (error) {
+        console.log(error);
       }
+
+      // Redirect to OTP verification page
+      router.push("/otpPage");
+      // Get the visitor address from the transaction receipt
+      // const visitorId =
+      //   transaction.events?.VisitorRegistered?.returnValues?.visitorId;
+      // console.log(visitorId);
+
+      // // Update state with the visitor address
+      // if (visitorId) {
+      //   setVisitingData((prevData) => ({
+      //     ...prevData,
+      //     visitorAddress: visitorId.toString(),
+      //   }));
+      // }
+      // router.push("/otpPage");
     } catch (error) {
       console.error("Error storing data:", error);
     }
@@ -203,8 +226,8 @@ const VisitorAuth: React.FC = () => {
               </label>
               <textarea
                 id="address"
-                name="address"
-                value={visitingData.address}
+                name="add"
+                value={visitingData.add}
                 onChange={handleVisitingChange}
                 rows={3}
                 className="mt-1 p-3 border border-gray-300 rounded w-full resize-none focus:outline-none focus:ring focus:ring-blue-500"
@@ -259,8 +282,8 @@ const VisitorAuth: React.FC = () => {
               </label>
               <select
                 id="type"
-                name="type"
-                value={visitingData.type}
+                name="types"
+                value={visitingData.types}
                 onChange={handleVisitingChange}
                 className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                 required
@@ -284,9 +307,9 @@ const VisitorAuth: React.FC = () => {
               </label>
               <input
                 type="text"
-                id="tomeet"
-                name="tomeet"
-                value={visitingData.tomeet}
+                id="toMeet"
+                name="toMeet"
+                value={visitingData.toMeet}
                 onChange={handleVisitingChange}
                 className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                 required
@@ -302,8 +325,8 @@ const VisitorAuth: React.FC = () => {
               <input
                 type="email"
                 id="meetPersonEmail"
-                name="meetPersonEmail"
-                value={visitingData.meetPersonEmail}
+                name="meetPersonemail"
+                value={visitingData.meetPersonemail}
                 onChange={handleVisitingChange}
                 className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                 required

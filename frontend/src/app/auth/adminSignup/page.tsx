@@ -3,19 +3,23 @@ import Link from "next/link";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumb/Breadcrumb";
 import DefaultLayout from "@/components/Layout/DefaultLayout";
-import { addAdmin, createAdmin } from "../../Slice/adminSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { createAdmin } from "../../Slice/adminSlice";
+import { useDispatch } from "react-redux";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { AppDispatch } from "@/app/store/store";
 
 const AdminSignup: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
+  const router = useRouter();
+
   const [formData, setFormData] = useState<{
     name: string;
     email: string;
     phone: string;
     password: string;
     rpassword: string;
-    photo: string | null;
+    photo: File | null;
   }>({
     name: "",
     email: "",
@@ -36,28 +40,52 @@ const AdminSignup: React.FC = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // Dispatch action to store data in MongoDB
-      await dispatch(addAdmin(formData));
-      console.log("Admin created successfully");
+      console.log("form data", formData);
+      // Dispatch the createAdmin thunk with the formData payload
+      debugger;
+      const actionResult = await dispatch(createAdmin(formData));
+      console.log(actionResult);
+
+      // Assuming you want to access the data returned by the thunk
+      debugger;
+      if (createAdmin.fulfilled.match(actionResult)) {
+        const adminData = actionResult.payload;
+        console.log(adminData);
+
+        console.log("Admin created successfully");
+        router.push("/auth/adminSignin");
+      } else {
+        console.error("Error creating admin:", actionResult.error);
+      }
     } catch (error) {
       console.error("Error creating admin:", error);
     }
   };
-
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        const fileDataURL = fileReader.result as string;
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          photo: fileDataURL,
-        }));
-      };
-      fileReader.readAsDataURL(file);
+      // Update the state with the file object
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        photo: file,
+      }));
     }
   };
+
+  // const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const fileReader = new FileReader();
+  //     fileReader.onload = () => {
+  //       const fileDataURL = fileReader.result as string;
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         photo: fileDataURL,
+  //       }));
+  //     };
+  //     fileReader.readAsDataURL(file);
+  //   }
+  // };
 
   // const handleFetchData = () => {
   //   dispatch(fetchAdminData()); // Dispatch action to fetch data from backend API
@@ -417,7 +445,6 @@ const AdminSignup: React.FC = () => {
                       onChange={handleFileChange}
                       name="photo"
                       type="file"
-                      placeholder="Enter your full name"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
@@ -447,10 +474,10 @@ const AdminSignup: React.FC = () => {
                 <div className="mb-5">
                   <button
                     type="submit"
-                    onClick={() => console.log(formData)}
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                    // onClick="/auth/adminSignin"
                   >
-                    Create
+                    Submit
                   </button>
                 </div>
 

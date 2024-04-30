@@ -1,41 +1,36 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importDefault(require("mongoose"));
-const adminSignup = new mongoose_1.default.Schema({
-  name: {
-    type: String,
-    require: true,
-  },
-  email: {
-    type: String,
-    require: true,
-    unique: true,
-  },
-  phone: {
-    type: Number,
-    require: true,
-    minLenth: 10,
-    maxLength: 10,
-  },
-  password: {
-    type: String,
-    require: true,
-    minLength: 7,
-  },
-  rpassword: {
-    type: String,
-    require: true,
-    minLength: 7,
-  },
-  photo: {
-    type: String,
-    require: true,
-  },
+const mongoose_1 = require("mongoose");
+const adminSignupSchema = new mongoose_1.Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    phone: {
+        type: Number,
+        required: true,
+        unique: true,
+        min: 10,
+    },
+    password: {
+        type: String,
+        required: true,
+        minLength: 7,
+    },
+    rpassword: {
+        type: String,
+        required: true,
+        minLength: 7,
+    },
+    photo: {
+        type: String,
+        required: true,
+    },
 });
-const admin = mongoose_1.default.model("admintbl", adminSignup);
-module.exports = admin;
+const Admin = (0, mongoose_1.model)("Admin", adminSignupSchema);
+exports.default = Admin;

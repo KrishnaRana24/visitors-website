@@ -3,6 +3,7 @@ import Admin from "../models/admin_model";
 import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
 const Token = (id: any) => {
   let secretOrPrivateKey = process.env.JWT_SECRET || "fallbackSecretKey";
@@ -35,7 +36,9 @@ const createSendToken = (
 
 const multerStorage = multer.diskStorage({
   destination: function (req: Request, file: any, cb: any) {
-    // const uploadDir = path.join(__dirname, "public", "images");
+    const uploadDir = path.join(__dirname, "public", "images");
+    console.log(uploadDir);
+
     cb(null, "/home/dev/blockchain/visitor-web/frontend/public/images/");
   },
   filename: function (req: Request, file: any, cb: any) {
@@ -46,21 +49,15 @@ const multerStorage = multer.diskStorage({
   },
 });
 
-const multerFilter = (req: Request, file: any, callback: any) => {
-  if (file.mimetype.startsWith("images")) {
-    callback(null, true);
-  } else {
-    callback(new Error("Not an image. Please upload only images"), false);
-  }
-};
-
 const upload = multer({
   storage: multerStorage,
   limits: {
     fileSize: 1000000, // 1000000 Bytes = 1 MB
   },
   fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(png|jpg)$/)) {
+    console.log(file);
+
+    if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
       // upload only png and jpg format
       return cb(new Error("Please upload a Image"));
     }
@@ -71,6 +68,19 @@ const upload = multer({
 });
 
 export const uploadImage = upload.single("photo");
+
+// export const uploadImage = async (req: Request, res: Response) => {
+//    try {
+//     // Assuming the uploaded file is saved as req.file.filename
+//     const url = `http://localhost:3000/${req.file.filename}`; // Assuming server runs on port 3000
+//     const photo = new Photo({ url });
+//     await photo.save();
+//     res.status(201).send({ url });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send('Internal Server Error');
+//   }
+// };
 
 // export const uploadImage = () => {
 //   try {
@@ -114,6 +124,27 @@ export const adminSign = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: error });
   }
+};
+
+export const adminUpdate = async (req: Request, res: Response) => {
+  const { name, email } = req.body;
+  // const { title } = req.params;
+  const adminId = req.params.id;
+  console.log(adminId);
+
+  let admin;
+  try {
+    admin = await Admin.findByIdAndUpdate(adminId, {
+      name,
+      email,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+  if (!admin) {
+    return res.status(500).json({ message: "unable to update admin data" });
+  }
+  return res.status(200).json({ admin });
 };
 
 export const adminLogin = async (req: Request, res: Response) => {

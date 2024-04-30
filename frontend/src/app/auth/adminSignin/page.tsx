@@ -1,11 +1,47 @@
 "use client";
-import React from "react";
+import React, { ChangeEvent, FormEvent, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumb/Breadcrumb";
 import DefaultLayout from "@/components/Layout/DefaultLayout";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { AppDispatch } from "../../store/store";
+import { login } from "../../Slice/authSlice";
+import { Web3Modal } from "@/context/web3modal";
+interface SigninFormData {
+  email: string;
+  password: string;
+}
 
 const AdminSignin: React.FC = () => {
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const [formData, setFormData] = useState<SigninFormData>({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [isAdminSignedIn, setIsAdminSignedIn] = useState(false);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("password", formData.password);
+      await dispatch(login(formDataToSend));
+      router.push("/dashboard");
+    } catch (error) {
+      setError("Error signing in: " + error);
+    }
+  };
+
   return (
     <DefaultLayout>
       <Breadcrumb pageName="Sign In" />
@@ -168,7 +204,7 @@ const AdminSignin: React.FC = () => {
                 Sign In to VisitorVault
               </h2>
 
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Email
@@ -176,6 +212,9 @@ const AdminSignin: React.FC = () => {
                   <div className="relative">
                     <input
                       type="email"
+                      name="email"
+                      onChange={handleChange}
+                      value={formData.email}
                       placeholder="Enter your email"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
@@ -207,8 +246,11 @@ const AdminSignin: React.FC = () => {
                   <div className="relative">
                     <input
                       type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
                       placeholder="6+ Characters, 1 Capital letter"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-white outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
                     <span className="absolute right-4 top-4">
@@ -236,11 +278,15 @@ const AdminSignin: React.FC = () => {
                 </div>
 
                 <div className="mb-5">
-                  <input
-                    type="submit"
-                    value="Sign In"
-                    className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
-                  />
+                  {isAdminSignedIn && <Web3Modal />}
+                  {!isAdminSignedIn && (
+                    <button
+                      type="submit"
+                      className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                    >
+                      Sign In
+                    </button>
+                  )}
                 </div>
 
                 <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">
@@ -282,7 +328,7 @@ const AdminSignin: React.FC = () => {
 
                 <div className="mt-6 text-center">
                   <p>
-                    Don’t have any account?{" "}
+                    Don’t have any account?
                     <Link href="/auth/adminSignup" className="text-primary">
                       Sign Up
                     </Link>

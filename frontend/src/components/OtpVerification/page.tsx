@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 const OTPVerification = () => {
   const [otp, setOTP] = useState(["", "", "", "", "", ""]);
@@ -9,16 +10,31 @@ const OTPVerification = () => {
     inputRefs.current[0]?.focus(); // Focus on the first input box when component mounts
   }, []);
 
-  const handleChange = (
+  const handleChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
   ) => {
-    const newOTP = [...otp];
-    newOTP[index] = e.target.value;
-    setOTP(newOTP);
+    try {
+      const newOTP = [...otp];
+      newOTP[index] = e.target.value;
+      setOTP(newOTP);
 
-    if (index < otp.length - 1 && e.target.value !== "") {
-      inputRefs.current[index + 1]?.focus(); // Focus on the next input box if available
+      if (index < otp.length - 1 && e.target.value !== "") {
+        inputRefs.current[index + 1]?.focus(); // Focus on the next input box if available
+      }
+
+      if (index === otp.length - 1) {
+        // All OTP digits entered, trigger verification
+        const enteredOTP = newOTP.join("");
+        const response = await axios.post("http://localhost:8001/verifyOtp", {
+          email: "user@example.com", // Add the user's email here
+          otp: enteredOTP,
+        });
+        console.log(response.data);
+        // Handle response here, display appropriate messages to the user
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -35,7 +51,7 @@ const OTPVerification = () => {
               key={index}
               type="text"
               maxLength={1}
-              className="w-12 h-12 text-3xl text-center m-2 border border-purple-300 rounded focus:outline-none focus:border-purple-800"
+              className="w-12 h-12 text-3xl text-center text-black m-2 border border-purple-300 rounded focus:outline-none focus:border-purple-800"
               value={digit}
               onChange={(e) => handleChange(e, index)}
               ref={(input) => {
