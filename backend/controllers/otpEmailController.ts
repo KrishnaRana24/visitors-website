@@ -80,7 +80,7 @@ export const generateOtp = async (req: Request, res: Response) => {
 
     await sendMail({
       email: visitor?.email,
-      meetPersonemail: req.body.meetpersonemail,
+      meetPersonemail: req.body.meetPersonemail,
       subject: "OTP for meeting Invitation",
       message,
       meetpersonmessage,
@@ -89,7 +89,7 @@ export const generateOtp = async (req: Request, res: Response) => {
     return res.status(200).json({
       status: "success",
       message: `OTP sent successfully to ${visitor?.email}`,
-      meetpersonmessage: `message is successfully send to ${req.body.meetpersonemail}`,
+      meetpersonmessage: `message is successfully send to ${req.body.meetPersonemail}`,
     });
   } catch (error) {
     res.status(500).send({ message: "Error sending email:", error });
@@ -98,20 +98,27 @@ export const generateOtp = async (req: Request, res: Response) => {
 
 //verify otp and after delete
 export const verifyOtp = async (req: Request, res: Response) => {
-  const { visitor, otp } = req.body;
-  console.log("visitor--", visitor);
-  console.log("visitor otp --", otp);
+  try {
+    const { email, otp } = req.body;
+    console.log("visitor email--", email);
+    console.log("visitor otp --", otp);
 
-  const storedOTP = await OTP.find({ otp });
-  console.log(storedOTP);
-
-  if (!storedOTP) {
-    return res.status(400).json({ message: "OTP not found for the visitor" });
-  } else {
-    res.send({ message: "OTP verification successful" });
+    const visitors = await OTP.find({ otp });
+    console.log(visitors);
+    if (visitors.length === 0) {
+      // No visitor found with the provided OTP
+      return res.status(400).json({ message: "OTP not found for the visitor" });
+    }
+    const visitor = visitors[0];
+    if (visitor.otp === otp) {
+      // OTP is verified, perform the desired action (e.g., grant access)
+      return res.status(200).json({ message: "OTP verified successfully." });
+    } else {
+      // OTP verification failed
+      return res.status(400).json({ message: "Invalid OTP." });
+    }
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    return res.status(500).json({ message: "Internal server error." });
   }
-  await OTP.deleteOne({ storedOTP });
-  return res.json({ message: "successfully deleted!" });
 };
-
-// mail to meetPerson

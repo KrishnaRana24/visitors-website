@@ -1,6 +1,7 @@
 {
-  "/userSignup/page": "app/userSignup/page.js",
-  "/otpPage/page": "app/otpPage/page.js",
+  "/not-found": "app/not-found.js",
   "/tables/page": "app/tables/page.js",
-  "/page": "app/page.js"
+  "/otpPage/page": "app/otpPage/page.js",
+  "/chart/page": "app/chart/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js"
 }

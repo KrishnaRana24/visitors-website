@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
-const OTPVerification = () => {
+const OTPVerification = ({ email }: { email: string }) => {
   const [otp, setOTP] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -16,6 +16,16 @@ const OTPVerification = () => {
   ) => {
     try {
       const newOTP = [...otp];
+
+      if (
+        e.target.value === "" &&
+        e.nativeEvent instanceof KeyboardEvent &&
+        e.nativeEvent.key === "Backspace" &&
+        index > 0
+      ) {
+        inputRefs.current[index - 1]?.focus();
+      }
+
       newOTP[index] = e.target.value;
       setOTP(newOTP);
 
@@ -27,7 +37,7 @@ const OTPVerification = () => {
         // All OTP digits entered, trigger verification
         const enteredOTP = newOTP.join("");
         const response = await axios.post("http://localhost:8001/verifyOtp", {
-          email: "user@example.com", // Add the user's email here
+          email: email,
           otp: enteredOTP,
         });
         console.log(response.data);

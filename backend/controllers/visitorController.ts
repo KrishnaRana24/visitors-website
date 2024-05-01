@@ -42,7 +42,7 @@ async function triggerGanacheTransaction(visitorData: any) {
 
     const contractInstance = new web3Instance.eth.Contract(
       contractJson.abi,
-      "0x46fa8C6Ab96011c16D5f274074E1a6d1D778c804" // Contract address
+      "0xc82D977E33E7E448682AC6427ef20c5b0B0a1f92" // Contract address
     );
     // console.log("--contractInstance--", contractInstance);
 
@@ -63,7 +63,7 @@ async function triggerGanacheTransaction(visitorData: any) {
       types: visitorData.types,
       toMeet: visitorData.toMeet,
       meetPersonemail: visitorData.meetPersonemail,
-      date: formatDateToUnixTimestamp(visitorData.date),
+      date: formatDateToUnixTimestamp(visitorData.date).toString(),
     };
     console.log("formattedData===", formattedData);
 

@@ -3,7 +3,7 @@ import OTPVerification from "@/components/OtpVerification/page";
 const OTPPage = () => {
   return (
     <div>
-      <OTPVerification />
+      <OTPVerification email={""} />
     </div>
   );
 };

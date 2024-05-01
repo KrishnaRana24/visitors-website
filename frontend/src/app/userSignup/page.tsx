@@ -38,7 +38,7 @@ const VisitorAuth: React.FC = () => {
 
         const contractInstance = new web3Instance.eth.Contract(
           contractJson.abi,
-          "0x46fa8C6Ab96011c16D5f274074E1a6d1D778c804" // Contract address
+          "0xc82D977E33E7E448682AC6427ef20c5b0B0a1f92" // Contract address
         );
 
         // Set the contract instance in the state
@@ -84,13 +84,16 @@ const VisitorAuth: React.FC = () => {
         console.error("No accounts found.");
         return;
       }
+      console.log(accounts);
 
       // Convert the date string to a Unix timestamp (uint256)
       const dateTimestamp = Date.parse(visitingData.date) / 1000; // Convert milliseconds to seconds
+      console.log(dateTimestamp);
       if (isNaN(dateTimestamp)) {
         console.error("Invalid date format.");
         return;
       }
+      console.log(dateTimestamp);
       try {
         const response = await axios.post(
           "http://localhost:8001/visitorSignup",
@@ -102,6 +105,7 @@ const VisitorAuth: React.FC = () => {
         console.log("Response from server:", response.data);
 
         const visitorId = response.data.visitorId;
+        console.log(visitorId);
 
         const gas = await contract.methods
           .registerVisitor(
@@ -117,6 +121,8 @@ const VisitorAuth: React.FC = () => {
             visitingData.visitorAddress
           )
           .estimateGas({ from: accounts[0] });
+
+        console.log(gas);
 
         const gasLimit: string = gas.toString(); // Convert bigint to string
 
