@@ -1,3 +1,8 @@
+//Ganache, which is a personal blockchain for Ethereum development, stores data in a format similar to the Ethereum mainnet.
+// Ethereum does not natively support storing dates in the format YYYY-MM-DD or any other human-readable date format.
+// Instead, dates are typically stored as Unix timestamps, which represent the number of seconds (or milliseconds) that have
+// elapsed since January 1, 1970 (the Unix epoch).
+
 "use client";
 import Web3 from "web3";
 import { Contract } from "web3-eth-contract";
@@ -5,14 +10,13 @@ import { AbiItem } from "web3-utils";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import otpGenerator from "otp-generator";
-// import VisitorAuth from "../../../public/contracts/VisitorAuth.json";
+import moment from "moment";
 
 const VisitorAuth: React.FC = () => {
   const router = useRouter();
   const [web3, setWeb3] = useState<Web3 | null>(null);
   const [contract, setContract] = useState<Contract<AbiItem[]> | null>(null);
-
+  const [submitting, setSubmitting] = useState(false);
   const [visitingData, setVisitingData] = useState({
     name: "",
     email: "",
@@ -38,7 +42,7 @@ const VisitorAuth: React.FC = () => {
 
         const contractInstance = new web3Instance.eth.Contract(
           contractJson.abi,
-          "0xc82D977E33E7E448682AC6427ef20c5b0B0a1f92" // Contract address
+          "0x008e94D6D6282575b55e5d464B55d595C8140449" // Contract address
         );
 
         // Set the contract instance in the state
@@ -53,6 +57,7 @@ const VisitorAuth: React.FC = () => {
     initializeContract();
   }, []);
 
+  // Function to format the date string to DD/MM/YYYY
   const handleVisitingChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -65,89 +70,120 @@ const VisitorAuth: React.FC = () => {
     }));
   };
 
+  // Assuming you have a function to handle Ethereum transaction signing
+  // async function signAndSendTransaction(
+  //   web3: Web3,
+  //   contract: Contract<AbiItem[]>,
+  //   account: string,
+  //   methodName: string,
+  //   params: any[]
+  // ): Promise<any> {
+  //   try {
+  //     const method = contract.methods[methodName];
+  //     const gas = await method(...params).estimateGas({ from: account });
+  //     const gasLimit = gas.toString();
+
+  //     // Refactor this part to make it more explicit
+  //     const encodedABI = method(...params).encodeABI();
+  //     const transactionParameters = {
+  //       to: contract.options.address, // Contract address
+  //       from: account,
+  //       gas: web3.utils.toHex(gasLimit),
+  //       data: encodedABI,
+  //     };
+
+  //     const transaction = await web3.eth.sendTransaction(transactionParameters);
+  //     return transaction;
+  //   } catch (error) {
+  //     console.error("Error signing and sending transaction:", error);
+  //     throw error;
+  //   }
+  // }
+
   const handleButtonClick: React.MouseEventHandler<HTMLButtonElement> = async (
     e
   ) => {
-    e.preventDefault();
-
     try {
-      // console.log("asfsdfx");
+      e.preventDefault();
 
-      // Ensure contract and data are available
       if (!contract || !visitingData) {
         console.error("Contract or data is not available.");
         return;
       }
+      console.log("visitingData===", visitingData);
 
-      const accounts = await web3?.eth.getAccounts();
-      if (!accounts || accounts.length === 0) {
-        console.error("No accounts found.");
+      // Checking if web3 is available
+      if (!web3) {
+        console.error("Web3 is not initialized.");
         return;
       }
-      console.log(accounts);
 
-      // Convert the date string to a Unix timestamp (uint256)
-      const dateTimestamp = Date.parse(visitingData.date) / 1000; // Convert milliseconds to seconds
-      console.log(dateTimestamp);
-      if (isNaN(dateTimestamp)) {
-        console.error("Invalid date format.");
-        return;
-      }
-      console.log(dateTimestamp);
+      // console.log(web3);
+
+      const accounts = await web3.eth.getAccounts();
+      const account = accounts[0];
+      console.log("Connected account:", account);
+
+      // Format the date string to YYYY-MM-DD
+      // const formattedDate = moment(visitingData.date).format("YYYY-MM-DD");
+      const unixTimestamp = moment(visitingData.date, "YYYY-MM-DD").valueOf();
+      console.log(unixTimestamp);
+
+      const response = await axios.post("http://localhost:8001/visitorSignup", {
+        ...visitingData,
+        date: unixTimestamp, // Include the formatted date
+      });
+
+      console.log("Server response:", response.data);
+
+      const visitorId = response.data.visitorId;
+      console.log(visitorId);
+
+      const gas = await contract.methods
+        .registerVisitor(
+          visitingData.name,
+          visitingData.email,
+          visitingData.add,
+          visitingData.phone,
+          visitingData.purpose,
+          visitingData.types,
+          visitingData.toMeet,
+          visitingData.meetPersonemail,
+          unixTimestamp,
+          visitingData.visitorAddress
+        )
+        .estimateGas({ from: account });
+
+      console.log("Gas estimate:", gas);
+
+      const transactionParameters = {
+        to: contract.options.address, // Contract address
+        from: account,
+        gas: web3.utils.toHex(gas),
+        data: contract.methods
+          .registerVisitor(
+            visitingData.name,
+            visitingData.email,
+            visitingData.add,
+            visitingData.phone,
+            visitingData.purpose,
+            visitingData.types,
+            visitingData.toMeet,
+            visitingData.meetPersonemail,
+            unixTimestamp, // Pass the formatted date
+            visitingData.visitorAddress
+          )
+          .encodeABI(),
+      };
+      console.log(transactionParameters);
+
+      // Send the transaction directly using web3.eth.sendTransaction()
+      const txHash = await web3.eth.sendTransaction(transactionParameters);
+
+      console.log("Transaction hash:", txHash);
+
+      console.log("Data stored successfully on the blockchain.");
       try {
-        const response = await axios.post(
-          "http://localhost:8001/visitorSignup",
-          {
-            ...visitingData,
-            dateTimestamp, // Include dateTimestamp in the data sent to the server
-          }
-        );
-        console.log("Response from server:", response.data);
-
-        const visitorId = response.data.visitorId;
-        console.log(visitorId);
-
-        const gas = await contract.methods
-          .registerVisitor(
-            visitingData.name,
-            visitingData.email,
-            visitingData.add,
-            visitingData.phone,
-            visitingData.purpose,
-            visitingData.types,
-            visitingData.toMeet,
-            visitingData.meetPersonemail,
-            dateTimestamp,
-            visitingData.visitorAddress
-          )
-          .estimateGas({ from: accounts[0] });
-
-        console.log(gas);
-
-        const gasLimit: string = gas.toString(); // Convert bigint to string
-
-        const transaction = await contract.methods
-          .registerVisitor(
-            visitingData.name,
-            visitingData.email,
-            visitingData.add,
-            visitingData.phone,
-            visitingData.purpose,
-            visitingData.types,
-            visitingData.toMeet,
-            visitingData.meetPersonemail,
-            dateTimestamp,
-            visitingData.visitorAddress
-          )
-          .send({ from: accounts[0], gas: gasLimit });
-
-        console.log(
-          "Transaction hash:",
-          transaction,
-          transaction.transactionHash
-        );
-        console.log("Data stored successfully on the blockchain.");
-
         const otpResponse = await axios.post(
           "http://localhost:8001/generateOtp",
           {
@@ -161,21 +197,7 @@ const VisitorAuth: React.FC = () => {
       } catch (error) {
         console.log(error);
       }
-
       // Redirect to OTP verification page
-      router.push("/otpPage");
-      // Get the visitor address from the transaction receipt
-      // const visitorId =
-      //   transaction.events?.VisitorRegistered?.returnValues?.visitorId;
-      // console.log(visitorId);
-
-      // // Update state with the visitor address
-      // if (visitorId) {
-      //   setVisitingData((prevData) => ({
-      //     ...prevData,
-      //     visitorAddress: visitorId.toString(),
-      //   }));
-      // }
       // router.push("/otpPage");
     } catch (error) {
       console.error("Error storing data:", error);
@@ -346,7 +368,7 @@ const VisitorAuth: React.FC = () => {
                 Date of Visit
               </label>
               <input
-                type="date"
+                type="Date"
                 id="date"
                 name="date"
                 value={visitingData.date}

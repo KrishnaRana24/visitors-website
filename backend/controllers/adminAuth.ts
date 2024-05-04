@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 import Admin from "../models/admin_model";
 import jwt from "jsonwebtoken";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
 
 const Token = (id: any) => {
   let secretOrPrivateKey = process.env.JWT_SECRET || "fallbackSecretKey";
@@ -34,65 +31,7 @@ const createSendToken = (
   });
 };
 
-const multerStorage = multer.diskStorage({
-  destination: function (req: Request, file: any, cb: any) {
-    const uploadDir = path.join(__dirname, "public", "images");
-    console.log(uploadDir);
-
-    cb(null, "/home/dev/blockchain/visitor-web/frontend/public/images/");
-  },
-  filename: function (req: Request, file: any, cb: any) {
-    cb(
-      null,
-      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
-
-const upload = multer({
-  storage: multerStorage,
-  limits: {
-    fileSize: 1000000, // 1000000 Bytes = 1 MB
-  },
-  fileFilter(req, file, cb) {
-    console.log(file);
-
-    if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
-      // upload only png and jpg format
-      return cb(new Error("Please upload a Image"));
-    }
-    // console.log(fileFilter);
-
-    cb(null, true);
-  },
-});
-
-export const uploadImage = upload.single("photo");
-
-// export const uploadImage = async (req: Request, res: Response) => {
-//    try {
-//     // Assuming the uploaded file is saved as req.file.filename
-//     const url = `http://localhost:3000/${req.file.filename}`; // Assuming server runs on port 3000
-//     const photo = new Photo({ url });
-//     await photo.save();
-//     res.status(201).send({ url });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send('Internal Server Error');
-//   }
-// };
-
-// export const uploadImage = () => {
-//   try {
-//     //console.log(multerFilter);
-
-//     upload.single("photo");
-//     console.log("photo upload successfully");
-//   } catch (error) {
-//     console.log("photo is not uploaded");
-//   }
-// };
-
+//get admin data
 export const getAdmin = async (req: Request, res: Response) => {
   let data;
   try {
@@ -106,19 +45,13 @@ export const getAdmin = async (req: Request, res: Response) => {
   return res.status(200).json({ data });
 };
 
+// add admin Api
 export const adminSign = async (req: Request, res: Response) => {
   try {
-    // console.log("fsdg");
-
     const admin = new Admin(req.body);
     // console.log(req.body);
-
-    if (req.file) {
-      res.status(400).json({ message: "photo is not uploaded!!" });
-    }
-
     const create = await admin.save();
-    console.log(create);
+    console.log("Admin Data----", create);
 
     res.status(201).json({ create });
   } catch (error) {
@@ -126,27 +59,46 @@ export const adminSign = async (req: Request, res: Response) => {
   }
 };
 
+//update api
 export const adminUpdate = async (req: Request, res: Response) => {
-  const { name, email } = req.body;
-  // const { title } = req.params;
+  const { name, email, phone, photo } = req.body;
   const adminId = req.params.id;
-  console.log(adminId);
+  // console.log(adminId);
 
-  let admin;
+  let editAdmin;
   try {
-    admin = await Admin.findByIdAndUpdate(adminId, {
+    editAdmin = await Admin.findByIdAndUpdate(adminId, {
       name,
       email,
+      phone,
+      photo,
     });
   } catch (error) {
     console.log(error);
   }
-  if (!admin) {
+  if (!editAdmin) {
     return res.status(500).json({ message: "unable to update admin data" });
   }
-  return res.status(200).json({ admin });
+  return res.status(200).json({ editAdmin });
 };
 
+//Delete API
+
+export const deleteAdmin = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  let deleteAdmin;
+  try {
+    deleteAdmin = await Admin.findByIdAndDelete(id);
+  } catch (error) {
+    console.log(error);
+  }
+  if (!deleteAdmin) {
+    return res.status(404).json({ message: "Unable to delete Admin" });
+  }
+  return res.status(200).json({ message: "successfully delete Admin Data" });
+};
+
+//login API
 export const adminLogin = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -166,6 +118,7 @@ export const adminLogin = async (req: Request, res: Response) => {
   }
 };
 
+//LogOut API
 export const logOut = (req: CustomRequest, res: Response) => {
   res.cookie("jwt", "loggedOut", {
     expires: new Date(Date.now() + 10 * 1000), // expires after 10 seconds
@@ -180,39 +133,39 @@ interface CustomRequest extends Request {
   admin?: any | string;
 }
 
-// export const protech = async (req: Request, res: Response, next: any) => {
-//   try {
-//     let token;
-//     if (
-//       req.headers.authorization &&
-//       req.headers.authorization.startsWith("Bearer")
-//     ) {
-//       token = req.headers.authorization.split(" ")[1];
-//     } else if (req.cookies.jwt && req.cookies.jwt !== "loggedOut") {
-//       token = req.cookies.jwt;
-//     }
-//     if (!token) {
-//       return res
-//         .status(400)
-//         .json({ message: "you are not login please login to get an access" });
-//     }
-//     //2.)verify token
-//     const decode = jwt.verify(token, process.env.JWT_SECRET!);
+export const protech = async (req: Request, res: Response, next: any) => {
+  try {
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    } else if (req.cookies.jwt && req.cookies.jwt !== "loggedOut") {
+      token = req.cookies.jwt;
+    }
+    if (!token) {
+      return res
+        .status(400)
+        .json({ message: "you are not login please login to get an access" });
+    }
+    //2.)verify token
+    const decode = jwt.verify(token, process.env.JWT_SECRET!);
 
-//     if (typeof decode === "string") {
-//       throw new Error("Invalid token");
-//     }
-//     const currentAdmin = await Admin.findById(decode.id);
-//     if (!currentAdmin) {
-//       return res
-//         .status(400)
-//         .json({ message: "this token is not valid to belong admin" });
-//     }
-//     //req.admin = currentAdmin;
-//     next();
-//   } catch (error) {
-//     return res
-//       .status(401)
-//       .json({ message: "Unauthorized please login to get an access" });
-//   }
-// };
+    if (typeof decode === "string") {
+      throw new Error("Invalid token");
+    }
+    const currentAdmin = await Admin.findById(decode.id);
+    if (!currentAdmin) {
+      return res
+        .status(400)
+        .json({ message: "this token is not valid to belong admin" });
+    }
+    //req.admin = currentAdmin;
+    next();
+  } catch (error) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized please login to get an access" });
+  }
+};

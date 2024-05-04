@@ -31,7 +31,7 @@ app.use(
   })
 );
 
-app.use(adminRoute);
+app.use("/adminRouter", adminRoute);
 app.use(visitorRouter);
 app.use(otpRouter);
 

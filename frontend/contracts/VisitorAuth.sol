@@ -11,7 +11,7 @@ contract VisitorAuth {
         string types;
         string toMeet;
         string meetPersonemail;
-        string date; // Date in "DD-MM-YYYY" format
+        uint256 date;
     }
 
     mapping(uint256 => Visitor) public visitors;
@@ -20,7 +20,7 @@ contract VisitorAuth {
     event VisitorRegistered(
         uint256 indexed visitorId,
         string name,
-        string date // Changed to string
+        uint256 date
     );
 
     // Function to register a visitor
@@ -33,9 +33,10 @@ contract VisitorAuth {
         string memory _types,
         string memory _toMeet,
         string memory _meetPersonemail,
-        string memory _date // Date in "DD-MM-YYYY" format
+        uint256 _date // Date in "DD-MM-YYYY" format
     ) public {
         lastVisitorId++;
+        // Parse the date and store it in Unix timestamp format
         visitors[lastVisitorId] = Visitor({
             name: _name,
             email: _email,
@@ -45,7 +46,7 @@ contract VisitorAuth {
             types: _types,
             toMeet: _toMeet,
             meetPersonemail: _meetPersonemail,
-            date: _date // Store the date as a string
+            date: _date
         });
         // Emit an event for the registered visitor
         emit VisitorRegistered(lastVisitorId, _name, _date);
@@ -65,5 +66,41 @@ contract VisitorAuth {
             allVisitors[i - 1] = visitors[i];
         }
         return allVisitors;
+    }
+
+    // Function to calculate total visitors by month
+    function getTotalVisitorsByMonth(
+        uint256 _month
+    ) public view returns (uint256) {
+        uint256 totalVisitors = 0;
+        for (uint256 i = 1; i <= lastVisitorId; i++) {
+            if (getMonth(visitors[i].date) == _month) {
+                totalVisitors++;
+            }
+        }
+        return totalVisitors;
+    }
+
+    // Function to calculate total visitors by week
+    function getTotalVisitorsByWeek(
+        uint256 _week
+    ) public view returns (uint256) {
+        uint256 totalVisitors = 0;
+        for (uint256 i = 1; i <= lastVisitorId; i++) {
+            if (getWeek(visitors[i].date) == _week) {
+                totalVisitors++;
+            }
+        }
+        return totalVisitors;
+    }
+
+    // Internal function to extract month from Unix timestamp
+    function getMonth(uint256 _timestamp) internal pure returns (uint256) {
+        return ((_timestamp / 86400) + 4) % 7;
+    }
+
+    // Internal function to extract week from Unix timestamp
+    function getWeek(uint256 _timestamp) internal pure returns (uint256) {
+        return ((_timestamp / 86400) + 4) % 52;
     }
 }

@@ -6,7 +6,7 @@ import moment from "moment";
 export const visitorSign = async (req: Request, res: Response) => {
   try {
     const { date, ...rest } = req.body;
-    const formattedDate = moment(date, "DD-MM-YYYY").toDate();
+    const formattedDate = moment(date).format("YYYY-MM-DD");
     // const visitorData = req.body;
     const visitor = new Visitor({ ...rest, date: formattedDate });
 
@@ -23,7 +23,11 @@ export const visitorSign = async (req: Request, res: Response) => {
 
     res
       .status(201)
-      .json({ create, transactionReceipt: transactionReceiptString });
+      .json({
+        visitorId: create._id,
+        create,
+        transactionReceipt: transactionReceiptString,
+      });
   } catch (error) {
     console.log(error);
 
@@ -42,7 +46,7 @@ async function triggerGanacheTransaction(visitorData: any) {
 
     const contractInstance = new web3Instance.eth.Contract(
       contractJson.abi,
-      "0xc82D977E33E7E448682AC6427ef20c5b0B0a1f92" // Contract address
+      "0x008e94D6D6282575b55e5d464B55d595C8140449" // Contract address
     );
     // console.log("--contractInstance--", contractInstance);
 
@@ -108,22 +112,20 @@ async function triggerGanacheTransaction(visitorData: any) {
     throw error;
   }
 }
+
 function formatDateToUnixTimestamp(unixTimestamp: number): number {
-  return Math.floor(unixTimestamp / 1000); // Convert milliseconds to seconds
+  return Math.floor(unixTimestamp / 1000).valueOf(); // Convert milliseconds to seconds
 }
-// function formatDateToUnixTimestamp(dateString: string): number {
-//   if (typeof dateString !== "string") {
-//     throw new Error("Invalid date format: dateString is not a string");
-//   }
 
-//   const parts = dateString.split(" ");
-//   if (parts.length !== 3) {
-//     throw new Error(
-//       "Invalid date format: dateString does not contain day/month/year"
-//     );
-//   }
-
-//   const [day, month, year] = parts;
-//   const date = new Date(`${year}-${month}-${day}`); // Construct date in yyyy-mm-dd format
-//   return Math.floor(date.getTime() / 1000); // Convert milliseconds to seconds
-// }
+export const getVisitorData = async (req: Request, res: Response) => {
+  let data;
+  try {
+    data = await Visitor.find();
+  } catch (error) {
+    console.error("error to dispaly visitor data", error);
+  }
+  if (!data) {
+    return res.status(400).json({ message: "no visitor data found!!" });
+  }
+  return res.status(200).json({ data });
+};

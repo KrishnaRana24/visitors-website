@@ -1,8 +1,28 @@
+"use client";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import axios from "axios";
 import DefaultLayout from "@/components/Layout/DefaultLayout";
 import Breadcrumb from "@/components/Breadcrumb/Breadcrumb";
 
 const Settings = () => {
+  const [adminData, setAdminData] = useState(null);
+
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8001/adminRouter/getdata"
+        );
+        setAdminData(response.data);
+      } catch (error) {
+        console.error("Error fetching admin data", error);
+      }
+    };
+
+    fetchAdminData();
+  }, []);
+
   return (
     <DefaultLayout>
       <div className="mx-auto max-w-270">
@@ -57,8 +77,7 @@ const Settings = () => {
                           type="text"
                           name="fullName"
                           id="fullName"
-                          placeholder="Devid Jhon"
-                          defaultValue="Devid Jhon"
+                          defaultValue={adminData?.name}
                         />
                       </div>
                     </div>
@@ -123,23 +142,6 @@ const Settings = () => {
                         defaultValue="devidjond45@gmail.com"
                       />
                     </div>
-                  </div>
-
-                  <div className="mb-5.5">
-                    <label
-                      className="mb-3 block text-sm font-medium text-black dark:text-white"
-                      htmlFor="Username"
-                    >
-                      Username
-                    </label>
-                    <input
-                      className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
-                      type="text"
-                      name="Username"
-                      id="Username"
-                      placeholder="devidjhon24"
-                      defaultValue="devidjhon24"
-                    />
                   </div>
 
                   <div className="mb-5.5">
@@ -285,7 +287,7 @@ const Settings = () => {
                         <span className="text-primary">Click to upload</span> or
                         drag and drop
                       </p>
-                      <p className="mt-1.5">SVG, PNG, JPG or GIF</p>
+                      <p className="mt-1.5"> PNG or JPG </p>
                       <p>(max, 800 X 800px)</p>
                     </div>
                   </div>

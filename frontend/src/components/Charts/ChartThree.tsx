@@ -14,12 +14,16 @@ const ChartThree: React.FC = () => {
         const contractJson = require("/public/contracts/VisitorAuth.json");
 
         const contract = new ethers.Contract(
-          "0xc82D977E33E7E448682AC6427ef20c5b0B0a1f92",
+          "0x008e94D6D6282575b55e5d464B55d595C8140449",
           contractJson.abi,
           provider
         );
 
+        console.log(contract);
+
         const allVisitors = await contract.getAllVisitors();
+
+        console.log(allVisitors);
 
         // Process visitor data to extract visitor types count
         const typesCount: { [key: string]: number } = {};
@@ -53,10 +57,10 @@ const ChartThree: React.FC = () => {
     labels: [
       "unknown",
       "client_partner",
-      "WFH Employees",
-      "Vender Visitor",
+      "wfh",
+      "vender",
       "job_applicant",
-      "Regulatory Visitors",
+      "regulatory",
     ],
     legend: {
       show: false,

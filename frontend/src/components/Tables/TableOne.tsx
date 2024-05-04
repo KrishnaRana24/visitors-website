@@ -17,11 +17,13 @@ const TableOne = () => {
       date: string;
     }[]
   >([]);
+
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10; // Number of items to display per page
   const [searchName, setSearchName] = useState("");
   const [searchTypes, setSearchTypes] = useState("");
   const [searchToMeet, setSearchToMeet] = useState("");
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -29,10 +31,11 @@ const TableOne = () => {
         const contractJson = require("/public/contracts/VisitorAuth.json"); // Ensure the path is correct
 
         const contract = new ethers.Contract(
-          "0xc82D977E33E7E448682AC6427ef20c5b0B0a1f92", // Contract address
+          "0x008e94D6D6282575b55e5d464B55d595C8140449", // Contract address
           contractJson.abi,
           provider
         );
+
         console.log(contract);
 
         const allVisitors = await contract.getAllVisitors();
@@ -46,7 +49,7 @@ const TableOne = () => {
           types: visitors.types,
           toMeet: visitors.toMeet,
           meetPersonEmail: visitors.meetPersonemail,
-          date: (Number(visitors.date) * 1000).toString(), // Convert Unix timestamp to JavaScript date
+          date: Number(visitors.date) * 1000, // Convert Unix timestamp to JavaScript date
         }));
 
         setVisitorData(formattedVisitorData);
@@ -71,13 +74,12 @@ const TableOne = () => {
     );
   });
 
+  console.log("filterData", filteredData);
+
   // Logic to calculate the index of the first and last item of the current page
   const indexOfLastItem = (currentPage + 1) * itemsPerPage;
-  // console.log(indexOfLastItem);
   const indexOfFirstItem = currentPage * itemsPerPage;
-  // console.log(indexOfFirstItem);
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-  // console.log(currentItems);
 
   return (
     <div className="object-cover rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -90,21 +92,27 @@ const TableOne = () => {
           type="text"
           placeholder="Search by visitor Name"
           value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
+          onChange={(e) => {
+            setSearchName(e.target.value);
+          }}
           className="mr-2 px-2 py-1 border rounded border-gray-300 "
         />
         <input
           type="text"
           placeholder="Search by visitor Types"
           value={searchTypes}
-          onChange={(e) => setSearchTypes(e.target.value)}
+          onChange={(e) => {
+            setSearchTypes(e.target.value);
+          }}
           className="mr-2 px-2 py-1 border rounded border-gray-300"
         />
         <input
           type="text"
           placeholder="Search by To Meet"
           value={searchToMeet}
-          onChange={(e) => setSearchToMeet(e.target.value)}
+          onChange={(e) => {
+            setSearchToMeet(e.target.value);
+          }}
           className="mr-2 px-2 py-1 border rounded border-gray-300"
         />
       </div>

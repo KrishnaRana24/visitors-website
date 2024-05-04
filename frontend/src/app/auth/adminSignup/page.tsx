@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppDispatch } from "@/app/store/store";
+import axios from "axios";
 
 const AdminSignup: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -19,7 +20,7 @@ const AdminSignup: React.FC = () => {
     phone: string;
     password: string;
     rpassword: string;
-    photo: File | null;
+    photo: File | null | string;
   }>({
     name: "",
     email: "",
@@ -37,17 +38,43 @@ const AdminSignup: React.FC = () => {
     }));
   };
 
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const formData = new FormData();
+        formData.append("photo", file);
+
+        // Make a POST request to the uploadPhoto endpoint
+        const response = await axios.post(
+          "http://localhost:8001/adminRouter/uploadImage",
+          formData
+        );
+
+        // Handle the response as needed
+        const data = response.data;
+        console.log("File uploaded successfully", data);
+
+        // Update the state with the file object
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          photo: data.path,
+        }));
+      } catch (error) {
+        console.error("Error uploading file", error);
+      }
+    }
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       console.log("form data", formData);
       // Dispatch the createAdmin thunk with the formData payload
-      debugger;
       const actionResult = await dispatch(createAdmin(formData));
-      console.log(actionResult);
+      console.log("action result --", actionResult);
 
       // Assuming you want to access the data returned by the thunk
-      debugger;
       if (createAdmin.fulfilled.match(actionResult)) {
         const adminData = actionResult.payload;
         console.log(adminData);
@@ -61,35 +88,6 @@ const AdminSignup: React.FC = () => {
       console.error("Error creating admin:", error);
     }
   };
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Update the state with the file object
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        photo: file,
-      }));
-    }
-  };
-
-  // const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     const fileReader = new FileReader();
-  //     fileReader.onload = () => {
-  //       const fileDataURL = fileReader.result as string;
-  //       setFormData((prevFormData) => ({
-  //         ...prevFormData,
-  //         photo: fileDataURL,
-  //       }));
-  //     };
-  //     fileReader.readAsDataURL(file);
-  //   }
-  // };
-
-  // const handleFetchData = () => {
-  //   dispatch(fetchAdminData()); // Dispatch action to fetch data from backend API
-  // };
 
   return (
     <DefaultLayout>

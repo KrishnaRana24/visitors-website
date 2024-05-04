@@ -7,7 +7,7 @@ interface Admin {
   email: string;
   phone: string;
   password: string;
-  photo: string | null;
+  photo: File | null;
 }
 
 interface AdminState {
@@ -24,15 +24,15 @@ export const createAdmin = createAsyncThunk(
   "admin/createAdmin",
   async (formData: any) => {
     const response = await axios.post(
-      "http://localhost:8001/adminauth",
+      "http://localhost:8001/adminRouter/adminauth",
       formData
     );
-    console.log(response);
+    console.log("adminData Responce", response);
 
     return response.data;
   }
 );
-console.log(createAdmin);
+// console.log(createAdmin);
 
 export const updateAdminData = createAsyncThunk(
   "admin/updateAdminData",
@@ -62,24 +62,24 @@ const adminSlice = createSlice({
       .addCase(createAdmin.rejected, (state, action) => {
         state.isLoading = false;
         console.error("Error creating admin", action.error);
-      })
-      .addCase(updateAdminData.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(updateAdminData.fulfilled, (state, action) => {
-        state.isLoading = false;
-        const index = state.admins.findIndex(
-          (admin) => admin.id === action.payload.id
-        );
-        if (index !== -1) {
-          state.admins[index] = action.payload;
-        }
-        console.log("Admin updated successfully");
-      })
-      .addCase(updateAdminData.rejected, (state) => {
-        state.isLoading = false;
-        console.error("Error updating admin");
       });
+    // .addCase(updateAdminData.pending, (state) => {
+    //   state.isLoading = true;
+    // })
+    // .addCase(updateAdminData.fulfilled, (state, action) => {
+    //   state.isLoading = false;
+    //   const index = state.admins.findIndex(
+    //     (admin) => admin.id === action.payload.id
+    //   );
+    //   if (index !== -1) {
+    //     state.admins[index] = action.payload;
+    //   }
+    //   console.log("Admin updated successfully");
+    // })
+    // .addCase(updateAdminData.rejected, (state) => {
+    //   state.isLoading = false;
+    //   console.error("Error updating admin");
+    // });
   },
 });
 
