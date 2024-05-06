@@ -7,7 +7,6 @@ import { createAdmin } from "../../Slice/adminSlice";
 import { useDispatch } from "react-redux";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AppDispatch } from "@/app/store/store";
 import axios from "axios";
 
 const AdminSignup: React.FC = () => {

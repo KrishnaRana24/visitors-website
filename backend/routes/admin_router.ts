@@ -5,10 +5,10 @@ import path from "path";
 import {
   adminSign,
   adminLogin,
-  // protech,
   getAdmin,
   adminUpdate,
   deleteAdmin,
+  verifyToken,
 } from "../controllers/adminAuth";
 const adminAuth = require("../controllers/adminAuth");
 
@@ -50,6 +50,7 @@ const imageUpload = multer({
 
 router.post("/adminauth", imageUpload.single("photo"), adminSign);
 router.post("/adminlogin", adminLogin);
+router.get("/protectedroute", verifyToken);
 router.get("/getdata", getAdmin);
 router.put("/updateAdmin/:id", adminUpdate);
 router.delete("/:id", deleteAdmin);
@@ -65,6 +66,6 @@ router.post(
   }
 );
 
-router.use(adminAuth.protech);
+// router.use(adminAuth.protech);
 
 export default router;

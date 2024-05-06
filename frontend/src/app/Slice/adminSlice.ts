@@ -7,6 +7,7 @@ interface Admin {
   email: string;
   phone: string;
   password: string;
+  rpassword: string;
   photo: File | null;
 }
 

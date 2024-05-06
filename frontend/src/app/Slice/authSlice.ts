@@ -1,32 +1,56 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import Cookies from "js-cookie";
 
+interface Admin {
+  email: string;
+  password: string;
+}
 interface AuthState {
   token: string | null;
   error: string | null;
+  admin: Admin | null;
 }
 
 const initialState: AuthState = {
-  token: localStorage.getItem("token"),
+  token:
+    typeof window !== "undefined"
+      ? localStorage.getItem("token") || null
+      : null,
   error: null,
+  admin: null,
 };
 
-// Thunk action creator for login
 export const adminLogin = createAsyncThunk(
-  "auth/login",
-  async (formData: FormData, { dispatch }) => {
+  "auth/adminLogin",
+  async (formData: any, { dispatch }) => {
+    console.log(formData);
+
     try {
-      const response = await axios.post<{ token: string }>(
+      const response = await axios.post<{ admin: Admin }>(
         "http://localhost:8001/adminRouter/adminlogin",
         formData
       );
-      const { token } = response.data;
-      dispatch(setToken(token));
-      // Redirect to the dashboard or any other protected route
-      window.location.replace("/dashboard");
+      console.log("responce data--", response);
+
+      const { admin } = response.data;
+      console.log(admin);
+
+      // dispatch(setToken(token));
+      dispatch(setAdmin(admin));
+
+      // Store token in localStorage and cookies
+
+      // // Store token in localStorage and cookies
+      // if (typeof window !== "undefined") {
+      //   localStorage.setItem("token", token);
+      //   Cookies.set("token", token);
+      // }
+
+      // return token;
     } catch (error) {
       dispatch(setError("Error signing in: " + error));
-      throw error; // Rethrow the error for components to handle
+      throw error;
     }
   }
 );
@@ -38,21 +62,28 @@ const authSlice = createSlice({
     setToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
       localStorage.setItem("token", action.payload);
+      Cookies.set("token", action.payload); // Set token in cookies
+      axios.defaults.headers.common["Authorization"] =
+        `Bearer ${action.payload}`;
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
+    setAdmin: (state, action: PayloadAction<Admin>) => {
+      state.admin = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(adminLogin.fulfilled, (state, action) => {
-      // This will be called when the login thunk is successful
-    });
-    builder.addCase(adminLogin.rejected, (state, action) => {
-      // This will be called when the login thunk encounters an error
+      // Access the token from action.payload after it has been set
+      const token = action.payload || "";
+      localStorage.setItem("token", token); // Set token in localStorage
+      Cookies.set("token", token); // Set token in cookies
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`; // Set token in axios headers
     });
   },
 });
 
-export const { setToken, setError } = authSlice.actions;
+export const { setToken, setError, setAdmin } = authSlice.actions;
 
 export default authSlice.reducer;

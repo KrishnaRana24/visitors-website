@@ -6,9 +6,10 @@ import Breadcrumb from "@/components/Breadcrumb/Breadcrumb";
 import DefaultLayout from "@/components/Layout/DefaultLayout";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-import { AppDispatch } from "../../store/store";
-import { login } from "../../Slice/authSlice";
+import { AppDispatch, RootState } from "../../store/store";
+import { adminLogin } from "../../Slice/authSlice";
 import { Web3Modal } from "@/context/web3modal";
+import { useSelector } from "react-redux";
 interface SigninFormData {
   email: string;
   password: string;
@@ -21,11 +22,13 @@ const AdminSignin: React.FC = () => {
     email: "",
     password: "",
   });
-  const [error, setError] = useState<string | null>(null);
-  const [isAdminSignedIn, setIsAdminSignedIn] = useState(false);
+  const { error } = useSelector((state: RootState) => state.auth);
+  // const [isAdminSignedIn, setIsAdminSignedIn] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    console.log(name);
+
     setFormData({ ...formData, [name]: value });
   };
 
@@ -35,10 +38,15 @@ const AdminSignin: React.FC = () => {
       const formDataToSend = new FormData();
       formDataToSend.append("email", formData.email);
       formDataToSend.append("password", formData.password);
-      await dispatch(login(formDataToSend));
-      router.push("/dashboard");
+      // console.log(formData);
+
+      // const token = dispatch(adminLogin(formData));
+      const token = await dispatch(adminLogin(formData));
+      console.log("client side token--", token);
+      // setIsAdminSignedIn(true);
+      // router.push("/dashboard");
     } catch (error) {
-      setError("Error signing in: " + error);
+      console.log("Error signing in: ", error);
     }
   };
 
@@ -203,7 +211,7 @@ const AdminSignin: React.FC = () => {
               <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
                 Sign In to VisitorVault
               </h2>
-
+              {error && <p style={{ color: "red" }}>{error}</p>}
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
@@ -278,15 +286,12 @@ const AdminSignin: React.FC = () => {
                 </div>
 
                 <div className="mb-5">
-                  {isAdminSignedIn && <Web3Modal />}
-                  {!isAdminSignedIn && (
-                    <button
-                      type="submit"
-                      className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
-                    >
-                      Sign In
-                    </button>
-                  )}
+                  <button
+                    type="submit"
+                    className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                  >
+                    Sign In
+                  </button>
                 </div>
 
                 <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">

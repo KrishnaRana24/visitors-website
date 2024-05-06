@@ -1,13 +1,15 @@
 import { Schema, model, Document } from "mongoose";
-const validator = require("validator");
+import bcrypt from "bcrypt";
+import validator from "validator";
 
 interface AdminSignup extends Document {
   name: string;
   email: string;
-  phone?: number; // Made phone number optional
+  phone?: number;
   password: string;
   rpassword: string;
   photo: string;
+  correctPassword(candidatePassword: string): Promise<boolean>;
 }
 
 const adminSignupSchema = new Schema<AdminSignup>({
@@ -19,7 +21,7 @@ const adminSignupSchema = new Schema<AdminSignup>({
     type: String,
     required: [true, "Please provide your email"],
     unique: true,
-    validate: [validator.isEmail, "Please provide a valid email"], // Fixed validator usage
+    validate: [validator.isEmail, "Please provide a valid email"],
   },
   phone: {
     type: Number,
@@ -32,7 +34,7 @@ const adminSignupSchema = new Schema<AdminSignup>({
   },
   rpassword: {
     type: String,
-    required: [true, "Please confirm your password"],
+    required: [false, "Please confirm your password"],
     validate: {
       // This only works on CREATE and SAVE!
       validator: function (this: AdminSignup, el: string): boolean {
@@ -46,6 +48,13 @@ const adminSignupSchema = new Schema<AdminSignup>({
     required: true,
   },
 });
+
+// Method to compare password
+adminSignupSchema.methods.correctPassword = async function (
+  candidatePassword: string
+) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 const Admin = model<AdminSignup>("Admin", adminSignupSchema);
 
