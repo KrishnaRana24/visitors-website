@@ -1,14 +1,11 @@
 "use client";
 import React from "react";
-// import ChartOne from "../Charts/ChartOne";
-// import ChartThree from "../Charts/ChartThree";
-// import ChartTwo from "../Charts/ChartTwo";
 import TableOne from "../Tables/TableOne";
 import CardDataStats from "../CardDataStats";
 import DefaultLayout from "../Layout/DefaultLayout";
-import ChartThree from "../Charts/ChartThree";
-import ChartTwo from "../Charts/ChartTwo";
-import ChartOne from "../Charts/ChartOne";
+import ChartOne from "../Charts/chartOne/page";
+import ChartTwo from "../Charts/chartTwo/page";
+import ChartThree from "../Charts/chartThree/page";
 
 const Adashboard: React.FC = () => {
   return (

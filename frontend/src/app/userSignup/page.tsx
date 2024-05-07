@@ -9,14 +9,11 @@ import { Contract } from "web3-eth-contract";
 import { AbiItem } from "web3-utils";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import moment from "moment";
 
 const VisitorAuth: React.FC = () => {
-  const router = useRouter();
   const [web3, setWeb3] = useState<Web3 | null>(null);
   const [contract, setContract] = useState<Contract<AbiItem[]> | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [visitingData, setVisitingData] = useState({
     name: "",
     email: "",
@@ -42,7 +39,7 @@ const VisitorAuth: React.FC = () => {
 
         const contractInstance = new web3Instance.eth.Contract(
           contractJson.abi,
-          "0x008e94D6D6282575b55e5d464B55d595C8140449" // Contract address
+          "0xC1D566488A235Dc02a3D17c44dc389379727B3E1" // Contract address
         );
 
         // Set the contract instance in the state
@@ -70,53 +67,17 @@ const VisitorAuth: React.FC = () => {
     }));
   };
 
-  // Assuming you have a function to handle Ethereum transaction signing
-  // async function signAndSendTransaction(
-  //   web3: Web3,
-  //   contract: Contract<AbiItem[]>,
-  //   account: string,
-  //   methodName: string,
-  //   params: any[]
-  // ): Promise<any> {
-  //   try {
-  //     const method = contract.methods[methodName];
-  //     const gas = await method(...params).estimateGas({ from: account });
-  //     const gasLimit = gas.toString();
-
-  //     // Refactor this part to make it more explicit
-  //     const encodedABI = method(...params).encodeABI();
-  //     const transactionParameters = {
-  //       to: contract.options.address, // Contract address
-  //       from: account,
-  //       gas: web3.utils.toHex(gasLimit),
-  //       data: encodedABI,
-  //     };
-
-  //     const transaction = await web3.eth.sendTransaction(transactionParameters);
-  //     return transaction;
-  //   } catch (error) {
-  //     console.error("Error signing and sending transaction:", error);
-  //     throw error;
-  //   }
-  // }
-
   const handleButtonClick: React.MouseEventHandler<HTMLButtonElement> = async (
     e
   ) => {
     try {
       e.preventDefault();
 
-      if (!contract || !visitingData) {
+      if (!contract || !visitingData || !web3) {
         console.error("Contract or data is not available.");
         return;
       }
-      console.log("visitingData===", visitingData);
-
-      // Checking if web3 is available
-      if (!web3) {
-        console.error("Web3 is not initialized.");
-        return;
-      }
+      console.log("visitingData----", visitingData);
 
       // console.log(web3);
 
@@ -158,7 +119,7 @@ const VisitorAuth: React.FC = () => {
 
       const transactionParameters = {
         to: contract.options.address, // Contract address
-        from: account,
+        from: accounts[0],
         gas: web3.utils.toHex(gas),
         data: contract.methods
           .registerVisitor(
@@ -175,12 +136,23 @@ const VisitorAuth: React.FC = () => {
           )
           .encodeABI(),
       };
-      console.log(transactionParameters);
+      // console.log(transactionParameters);
 
       // Send the transaction directly using web3.eth.sendTransaction()
-      const txHash = await web3.eth.sendTransaction(transactionParameters);
+      const privatekey = process.env.PRIVATE_KEY;
+      if (!privatekey) {
+        throw new Error("Private key is not provided");
+      }
+      const signedTx = await web3.eth.accounts.signTransaction(
+        transactionParameters,
+        privatekey
+      );
 
-      console.log("Transaction hash:", txHash);
+      const txReceipt = await web3.eth.sendSignedTransaction(
+        signedTx.rawTransaction
+      );
+
+      console.log("Transaction hash:", txReceipt.transactionHash);
 
       console.log("Data stored successfully on the blockchain.");
       try {
@@ -197,8 +169,6 @@ const VisitorAuth: React.FC = () => {
       } catch (error) {
         console.log(error);
       }
-      // Redirect to OTP verification page
-      // router.push("/otpPage");
     } catch (error) {
       console.error("Error storing data:", error);
     }

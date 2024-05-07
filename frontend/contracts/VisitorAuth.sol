@@ -34,9 +34,9 @@ contract VisitorAuth {
         string memory _toMeet,
         string memory _meetPersonemail,
         uint256 _date // Date in "DD-MM-YYYY" format
-    ) public {
+    ) public payable {
+        require(msg.value > 0, "Value must be greater than 0");
         lastVisitorId++;
-        // Parse the date and store it in Unix timestamp format
         visitors[lastVisitorId] = Visitor({
             name: _name,
             email: _email,

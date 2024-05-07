@@ -1,10 +1,15 @@
-import Chart from "@/components/Charts/page";
+"use client";
 import DefaultLayout from "@/components/Layout/DefaultLayout";
+import ChartThree from "../../components/Charts/chartThree/page";
+import ChartOne from "@/components/Charts/chartOne/page";
+import ChartTwo from "@/components/Charts/chartTwo/page";
 
 const BasicChartPage: React.FC = () => {
   return (
     <DefaultLayout>
-      <Chart />
+      <ChartOne />
+      <ChartTwo />
+      <ChartThree />
     </DefaultLayout>
   );
 };

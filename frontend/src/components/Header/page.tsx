@@ -1,13 +1,33 @@
 "use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import DropdownUser from "./DropdownUser";
-import Image from "next/image";
-import { useWeb3Modal, useWeb3ModalTheme } from "@web3modal/ethers/react";
+import { useWeb3Modal } from "@web3modal/ethers/react";
 
 const Header = (props: {
   sidebarOpen: string | boolean | undefined;
   setSidebarOpen: (arg0: boolean) => void;
 }) => {
+  const [connected, setConnected] = useState(false);
   const { open } = useWeb3Modal();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Open MetaMask dialog upon component mount
+    open();
+  }, []);
+
+  useEffect(() => {
+    // Redirect to dashboard if user is connected
+    if (connected) {
+      router.push("/dashboard");
+    }
+  }, [connected]);
+
+  const handleConnect = () => {
+    // Function to handle MetaMask connect
+    open({ view: "Networks" }).then(() => setConnected(true));
+  };
 
   return (
     <nav className="bg-gray-800">
@@ -30,28 +50,39 @@ const Header = (props: {
           </div>
 
           <div className="hidden lg:flex gap-3 items-center">
-            {/* Web3Modal Buttons */}
-            <div>
-              <button
-                // className="bg-olive-500 text-white rounded-full px-4 py-2 hover:bg-olive-600 transition duration-300"
-                className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
-                onClick={() => open()}
-              >
-                <w3m-button />
-              </button>
-            </div>
-            <div>
-              <button
-                className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
-                onClick={() => open({ view: "Networks" })}
-              >
-                <w3m-network-button />
-              </button>
-            </div>
-            {/* Chat Notification Area */}
-            {/* <DropdownMessage /> */}
-            {/* User Area */}
-            <DropdownUser />
+            {connected && (
+              <>
+                <div>
+                  <button
+                    className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
+                    onClick={handleConnect}
+                  >
+                    <w3m-button />
+                  </button>
+                </div>
+                <div>
+                  <button
+                    className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
+                    onClick={() => open({ view: "Networks" })}
+                  >
+                    <w3m-network-button />
+                  </button>
+                </div>
+
+                <DropdownUser />
+              </>
+            )}
+
+            {!connected && (
+              <div>
+                <button
+                  className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
+                  onClick={handleConnect}
+                >
+                  <w3m-button />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

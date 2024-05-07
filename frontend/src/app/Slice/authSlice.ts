@@ -27,27 +27,27 @@ export const adminLogin = createAsyncThunk(
     console.log(formData);
 
     try {
-      const response = await axios.post<{ admin: Admin }>(
+      const response = await axios.post<{ admin: Admin; token: string }>(
         "http://localhost:8001/adminRouter/adminlogin",
         formData
       );
       console.log("responce data--", response);
 
-      const { admin } = response.data;
-      console.log(admin);
+      const { admin, token } = response.data;
+      console.log(admin, token);
 
-      // dispatch(setToken(token));
+      //
       dispatch(setAdmin(admin));
-
+      dispatch(setToken(token));
       // Store token in localStorage and cookies
 
       // // Store token in localStorage and cookies
-      // if (typeof window !== "undefined") {
-      //   localStorage.setItem("token", token);
-      //   Cookies.set("token", token);
-      // }
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", token);
+        Cookies.set("token", token);
+      }
 
-      // return token;
+      return token;
     } catch (error) {
       dispatch(setError("Error signing in: " + error));
       throw error;

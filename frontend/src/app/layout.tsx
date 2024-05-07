@@ -5,6 +5,9 @@ import "./globals.css";
 import { Web3Modal } from "@/context/web3modal";
 import { Provider } from "react-redux";
 import { store } from "./../app/store/store";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const inter = Inter({ subsets: ["latin"] });
 

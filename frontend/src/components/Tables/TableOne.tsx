@@ -31,7 +31,7 @@ const TableOne = () => {
         const contractJson = require("/public/contracts/VisitorAuth.json"); // Ensure the path is correct
 
         const contract = new ethers.Contract(
-          "0x008e94D6D6282575b55e5d464B55d595C8140449", // Contract address
+          "0xC1D566488A235Dc02a3D17c44dc389379727B3E1", // Contract address
           contractJson.abi,
           provider
         );
