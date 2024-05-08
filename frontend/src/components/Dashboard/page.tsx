@@ -3,9 +3,9 @@ import React from "react";
 import TableOne from "../Tables/TableOne";
 import CardDataStats from "../CardDataStats";
 import DefaultLayout from "../Layout/DefaultLayout";
-import ChartOne from "../Charts/chartOne/page";
-import ChartTwo from "../Charts/chartTwo/page";
-import ChartThree from "../Charts/chartThree/page";
+import ChartOne from "../Charts/ChartOne/page";
+import ChartTwo from "../Charts/ChartTwo/page";
+import ChartThree from "../Charts/ChartThree/page";
 
 const Adashboard: React.FC = () => {
   return (

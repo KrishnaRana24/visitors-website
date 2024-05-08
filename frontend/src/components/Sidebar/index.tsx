@@ -424,9 +424,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
                           <li>
                             <Link
-                              href="/chart/chartOne"
+                              href="/chart/chartThree"
                               className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
-                                pathname === "/chart/chartOne" && "text-white"
+                                pathname === "/chart/chartThree" && "text-white"
                               }`}
                             >
                               Visitors Analytics
@@ -434,9 +434,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                           <li>
                             <Link
-                              href="/chart/chartTwo"
+                              href="/chart/chartOne"
                               className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
-                                pathname === "/chart/chartTwo" && "text-white"
+                                pathname === "/chart/chartOne" && "text-white"
                               }`}
                             >
                               Monthly Chart
@@ -444,9 +444,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                           <li>
                             <Link
-                              href="/chart/chartThree"
+                              href="/chart/chartTwo"
                               className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
-                                pathname === "/chart/chartThree" && "text-white"
+                                pathname === "/chart/chartTwo" && "text-white"
                               }`}
                             >
                               Weekly Chart

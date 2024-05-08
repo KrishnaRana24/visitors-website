@@ -10,8 +10,15 @@ import { AbiItem } from "web3-utils";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import moment from "moment";
+import { useRouter } from "next/navigation";
+import PhoneInput from "react-phone-number-input/input";
+import parsePhoneNumberFromString, {
+  E164Number,
+  CountryCode,
+} from "libphonenumber-js";
 
 const VisitorAuth: React.FC = () => {
+  const router = useRouter();
   const [web3, setWeb3] = useState<Web3 | null>(null);
   const [contract, setContract] = useState<Contract<AbiItem[]> | null>(null);
   const [visitingData, setVisitingData] = useState({
@@ -39,7 +46,7 @@ const VisitorAuth: React.FC = () => {
 
         const contractInstance = new web3Instance.eth.Contract(
           contractJson.abi,
-          "0xC1D566488A235Dc02a3D17c44dc389379727B3E1" // Contract address
+          "0x8fbdBD15920B21fe2ee5649AEC902fB883De4DfA" // Contract address
         );
 
         // Set the contract instance in the state
@@ -113,46 +120,33 @@ const VisitorAuth: React.FC = () => {
           unixTimestamp,
           visitingData.visitorAddress
         )
-        .estimateGas({ from: account });
+        .estimateGas({
+          from: account,
+          value: web3.utils.toWei("0.1", "ether"),
+        });
 
       console.log("Gas estimate:", gas);
 
-      const transactionParameters = {
-        to: contract.options.address, // Contract address
-        from: accounts[0],
-        gas: web3.utils.toHex(gas),
-        data: contract.methods
-          .registerVisitor(
-            visitingData.name,
-            visitingData.email,
-            visitingData.add,
-            visitingData.phone,
-            visitingData.purpose,
-            visitingData.types,
-            visitingData.toMeet,
-            visitingData.meetPersonemail,
-            unixTimestamp, // Pass the formatted date
-            visitingData.visitorAddress
-          )
-          .encodeABI(),
-      };
-      // console.log(transactionParameters);
+      const tx = await contract.methods
+        .registerVisitor(
+          visitingData.name,
+          visitingData.email,
+          visitingData.add,
+          visitingData.phone,
+          visitingData.purpose,
+          visitingData.types,
+          visitingData.toMeet,
+          visitingData.meetPersonemail,
+          unixTimestamp,
+          visitingData.visitorAddress
+        )
+        .send({
+          from: account,
+          value: web3.utils.toWei("0.1", "ether"),
+          gas: web3.utils.toHex(gas),
+        });
 
-      // Send the transaction directly using web3.eth.sendTransaction()
-      const privatekey = process.env.PRIVATE_KEY;
-      if (!privatekey) {
-        throw new Error("Private key is not provided");
-      }
-      const signedTx = await web3.eth.accounts.signTransaction(
-        transactionParameters,
-        privatekey
-      );
-
-      const txReceipt = await web3.eth.sendSignedTransaction(
-        signedTx.rawTransaction
-      );
-
-      console.log("Transaction hash:", txReceipt.transactionHash);
+      console.log("Transaction hash:", tx.transactionHash);
 
       console.log("Data stored successfully on the blockchain.");
       try {
@@ -166,6 +160,7 @@ const VisitorAuth: React.FC = () => {
         );
 
         console.log("OTP generated and sent successfully:", otpResponse.data);
+        router.push("/otpPage");
       } catch (error) {
         console.log(error);
       }
@@ -235,16 +230,33 @@ const VisitorAuth: React.FC = () => {
             <div>
               <label
                 htmlFor="phone"
-                className="block text-sm font-medium  text-black"
+                className="block text-sm font-medium text-black"
               >
                 Phone Number
               </label>
-              <input
-                type="tel"
+              <PhoneInput
                 id="phone"
                 name="phone"
-                value={visitingData.phone}
-                onChange={handleVisitingChange}
+                country={"IN" as CountryCode} // Set default country to India
+                value={visitingData.phone as E164Number}
+                onChange={(value) => {
+                  if (value) {
+                    const phoneNumber = parsePhoneNumberFromString(value);
+                    if (phoneNumber) {
+                      setVisitingData((prevData) => ({
+                        ...prevData,
+                        phone: phoneNumber.format("E.164"),
+                      }));
+                    } else {
+                      setVisitingData((prevData) => ({
+                        ...prevData,
+                        phone: "",
+                      }));
+                    }
+                  } else {
+                    setVisitingData((prevData) => ({ ...prevData, phone: "" }));
+                  }
+                }}
                 className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                 required
               />

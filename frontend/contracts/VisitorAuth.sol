@@ -73,8 +73,9 @@ contract VisitorAuth {
         uint256 _month
     ) public view returns (uint256) {
         uint256 totalVisitors = 0;
-        for (uint256 i = 1; i <= lastVisitorId; i++) {
-            if (getMonth(visitors[i].date) == _month) {
+        Visitor[] memory allVisitors = getAllVisitors();
+        for (uint256 i = 1; i < lastVisitorId; i++) {
+            if (getMonth(allVisitors[i].date) == _month) {
                 totalVisitors++;
             }
         }
@@ -86,8 +87,9 @@ contract VisitorAuth {
         uint256 _week
     ) public view returns (uint256) {
         uint256 totalVisitors = 0;
-        for (uint256 i = 1; i <= lastVisitorId; i++) {
-            if (getWeek(visitors[i].date) == _week) {
+        Visitor[] memory allVisitors = getAllVisitors();
+        for (uint256 i = 1; i < lastVisitorId; i++) {
+            if (getWeek(allVisitors[i].date) == _week) {
                 totalVisitors++;
             }
         }

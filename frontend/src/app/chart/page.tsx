@@ -1,8 +1,8 @@
 "use client";
+import ChartOne from "@/components/Charts/ChartOne/page";
+import ChartThree from "@/components/Charts/ChartThree/page";
+import ChartTwo from "@/components/Charts/ChartTwo/page";
 import DefaultLayout from "@/components/Layout/DefaultLayout";
-import ChartThree from "../../components/Charts/chartThree/page";
-import ChartOne from "@/components/Charts/chartOne/page";
-import ChartTwo from "@/components/Charts/chartTwo/page";
 
 const BasicChartPage: React.FC = () => {
   return (

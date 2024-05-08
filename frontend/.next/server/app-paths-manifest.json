@@ -1,6 +1,7 @@
 {
+  "/not-found": "app/not-found.js",
+  "/tables/page": "app/tables/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/userSignup/page": "app/userSignup/page.js",
-  "/heroSection/page": "app/heroSection/page.js",
+  "/chart/chartOne/page": "app/chart/chartOne/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }

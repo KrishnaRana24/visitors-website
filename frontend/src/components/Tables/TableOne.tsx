@@ -1,7 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { JsonRpcProvider, ethers } from "ethers";
 import ReactPaginate from "react-paginate";
+
+import moment from "moment";
 
 const TableOne = () => {
   const [visitorData, setVisitorData] = useState<
@@ -23,6 +25,8 @@ const TableOne = () => {
   const [searchName, setSearchName] = useState("");
   const [searchTypes, setSearchTypes] = useState("");
   const [searchToMeet, setSearchToMeet] = useState("");
+  const [inputTimestamp, setInputTimestamp] = useState<string>("");
+  const [convertedDate, setConvertedDate] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,7 +35,7 @@ const TableOne = () => {
         const contractJson = require("/public/contracts/VisitorAuth.json"); // Ensure the path is correct
 
         const contract = new ethers.Contract(
-          "0xC1D566488A235Dc02a3D17c44dc389379727B3E1", // Contract address
+          "0x8fbdBD15920B21fe2ee5649AEC902fB883De4DfA", // Contract address
           contractJson.abi,
           provider
         );
@@ -81,11 +85,62 @@ const TableOne = () => {
   const indexOfFirstItem = currentPage * itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
+  const handleConvert = () => {
+    // Check if the input timestamp is a valid number
+    const trimmedInput: string = inputTimestamp.trim();
+    console.log("trimmedInput---", trimmedInput);
+
+    if (isNaN(parseInt(trimmedInput))) {
+      console.log("Invalid timestamp");
+      return;
+    }
+
+    const timestampInMilliseconds: number = parseInt(trimmedInput);
+    console.log("timestamp---", timestampInMilliseconds);
+
+    // Use moment.js to convert Unix milliseconds to the desired format
+    const formattedDate: string = moment
+      .unix(timestampInMilliseconds / 1000000)
+      .format("YYYY-MM-DD");
+    console.log("Formatted timestamp--", formattedDate);
+
+    setConvertedDate(formattedDate);
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setInputTimestamp(e.target.value);
+  };
+
   return (
     <div className="object-cover rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
         Visitor Details
       </h4>
+
+      {/* convert timestamp */}
+      <div className="flex items-center mb-4">
+        <h5 className="mr-2 px-2 py-1 text-black">Enter Timestamp :</h5>
+        <input
+          onChange={handleInputChange}
+          type="text"
+          placeholder="Enter date to convert"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+        />
+        <button
+          className="ml-4 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+          onClick={handleConvert}
+        >
+          Convert
+        </button>
+        {/* Display converted timestamp */}
+        <input
+          type="text"
+          value={convertedDate}
+          readOnly
+          className="px-3 py-2 ml-4 border border-gray-300 rounded-md focus:outline-none"
+        />
+      </div>
+
       {/* Search Inputs */}
       <div className="flex mb-4">
         <input
@@ -95,7 +150,7 @@ const TableOne = () => {
           onChange={(e) => {
             setSearchName(e.target.value);
           }}
-          className="mr-2 px-2 py-1 border rounded border-gray-300 "
+          className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-blue-500 "
         />
         <input
           type="text"
@@ -104,7 +159,7 @@ const TableOne = () => {
           onChange={(e) => {
             setSearchTypes(e.target.value);
           }}
-          className="mr-2 px-2 py-1 border rounded border-gray-300"
+          className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-blue-500"
         />
         <input
           type="text"
@@ -113,7 +168,7 @@ const TableOne = () => {
           onChange={(e) => {
             setSearchToMeet(e.target.value);
           }}
-          className="mr-2 px-2 py-1 border rounded border-gray-300"
+          className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-blue-500"
         />
       </div>
       <div className="overflow-x-auto">
