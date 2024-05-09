@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/provider/web3/hooks/useAccount.js", "src/components/provider/web3/page.js", "src/components/provider/web3/hooks/useNetwork.js", "src/components/provider/web3/hooks/setupHooks.js", "src/components/hooks/web3/page.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }

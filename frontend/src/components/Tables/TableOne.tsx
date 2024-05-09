@@ -1,8 +1,7 @@
 "use client";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { JsonRpcProvider, ethers } from "ethers";
 import ReactPaginate from "react-paginate";
-
 import moment from "moment";
 
 const TableOne = () => {
@@ -21,13 +20,13 @@ const TableOne = () => {
   >([]);
 
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 10; // Number of items to display per page
+  const itemsPerPage = 10;
   const [searchName, setSearchName] = useState("");
   const [searchTypes, setSearchTypes] = useState("");
   const [searchToMeet, setSearchToMeet] = useState("");
   const [inputTimestamp, setInputTimestamp] = useState<string>("");
   const [convertedDate, setConvertedDate] = useState<string>("");
-
+  const tableRef = useRef(null);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,7 +34,7 @@ const TableOne = () => {
         const contractJson = require("/public/contracts/VisitorAuth.json"); // Ensure the path is correct
 
         const contract = new ethers.Contract(
-          "0x8fbdBD15920B21fe2ee5649AEC902fB883De4DfA", // Contract address
+          "0x429c4ECca8cAbe50A7741A85F95c0DEF40674FAA", // Contract address
           contractJson.abi,
           provider
         );
@@ -172,7 +171,7 @@ const TableOne = () => {
         />
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full table">
           {/* Table Headers */}
           <thead>
             <tr className="bg-blue-200 dark:bg-gray-800 text-black">
@@ -246,6 +245,12 @@ const TableOne = () => {
         breakLabel={"..."}
         breakClassName={"px-3 py-1 mr-2"}
       />
+      {/* Print table option  */}
+      <div className="flex justify-end mb-4">
+        <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600">
+          Print Table data
+        </button>
+      </div>
     </div>
   );
 };

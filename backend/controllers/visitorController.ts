@@ -11,7 +11,6 @@ export const visitorSign = async (req: Request, res: Response) => {
     const visitor = new Visitor({ ...rest, date: formattedDate });
 
     const create = await visitor.save();
-    // console.log(create);
 
     // Once data is stored in MongoDB, trigger the Ganache transaction
     const transactionReceipt = await triggerGanacheTransaction(create);
@@ -21,13 +20,11 @@ export const visitorSign = async (req: Request, res: Response) => {
     );
     // console.log("---transactionReceipt---", transactionReceipt);
 
-    res
-      .status(201)
-      .json({
-        visitorId: create._id,
-        create,
-        transactionReceipt: transactionReceiptString,
-      });
+    res.status(201).json({
+      visitorId: create._id,
+      create,
+      transactionReceipt: transactionReceiptString,
+    });
   } catch (error) {
     console.log(error);
 
@@ -129,3 +126,38 @@ export const getVisitorData = async (req: Request, res: Response) => {
   }
   return res.status(200).json({ data });
 };
+
+// export const getVisitorData = async (req: Request, res: Response) => {
+//   let data;
+//   try {
+//     const { year, month, week } = req.query;
+
+//     const queryConditions: any = {};
+
+//     if (year) {
+//       queryConditions.year = year;
+//     }
+//     console.log("year---", year);
+
+//     if (month) {
+//       queryConditions.month = month;
+//     }
+//     console.log("month---", month);
+
+//     if (week) {
+//       queryConditions.week = week;
+//     }
+//     console.log("week---", week);
+//     // data = await Visitor.find();
+//     data = await Visitor.find(queryConditions);
+//   } catch (error) {
+//     console.error("Error fetching visitor data:", error);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+
+//   if (!data || data.length === 0) {
+//     return res.status(404).json({ message: "No visitor data found" });
+//   }
+
+//   return res.status(200).json({ data });
+// };

@@ -74,7 +74,7 @@ contract VisitorAuth {
     ) public view returns (uint256) {
         uint256 totalVisitors = 0;
         Visitor[] memory allVisitors = getAllVisitors();
-        for (uint256 i = 1; i < lastVisitorId; i++) {
+        for (uint256 i = 0; i < allVisitors.length; i++) {
             if (getMonth(allVisitors[i].date) == _month) {
                 totalVisitors++;
             }
@@ -88,7 +88,7 @@ contract VisitorAuth {
     ) public view returns (uint256) {
         uint256 totalVisitors = 0;
         Visitor[] memory allVisitors = getAllVisitors();
-        for (uint256 i = 1; i < lastVisitorId; i++) {
+        for (uint256 i = 0; i < allVisitors.length; i++) {
             if (getWeek(allVisitors[i].date) == _week) {
                 totalVisitors++;
             }
@@ -98,11 +98,11 @@ contract VisitorAuth {
 
     // Internal function to extract month from Unix timestamp
     function getMonth(uint256 _timestamp) internal pure returns (uint256) {
-        return ((_timestamp / 86400) + 4) % 7;
+        return ((_timestamp / 2629743) % 12) + 1; // Assuming 30 days in a month
     }
 
     // Internal function to extract week from Unix timestamp
     function getWeek(uint256 _timestamp) internal pure returns (uint256) {
-        return ((_timestamp / 86400) + 4) % 52;
+        return ((_timestamp / 604800) % 52) + 1; // Assuming 7 days in a week
     }
 }

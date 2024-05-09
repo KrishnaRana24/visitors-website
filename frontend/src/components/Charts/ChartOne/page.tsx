@@ -1,47 +1,55 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ReactApexChart from "react-apexcharts";
-import { JsonRpcProvider, ethers } from "ethers";
+import axios from "axios";
 import { ApexOptions } from "apexcharts";
 
 const ChartOne: React.FC = () => {
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 10 }, (_, index) => currentYear - index);
+
   const [seriesData, setSeriesData] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const provider = new JsonRpcProvider("http://127.0.0.1:7545");
-        const contractJson = require("/public/contracts/VisitorAuth.json");
-        const contract = new ethers.Contract(
-          "0x8fbdBD15920B21fe2ee5649AEC902fB883De4DfA",
-          contractJson.abi,
-          provider
+        // Fetch data from MongoDB URL
+        const response = await axios.get(
+          `http://localhost:8001/visitorRouter/getVisitorData?year=${selectedYear}`
         );
 
-        const monthlyDataPromises = [];
-        for (let month = 1; month <= 12; month++) {
-          const monthlyDataPromise = contract.getTotalVisitorsByMonth(month);
-          monthlyDataPromises.push(monthlyDataPromise);
-        }
-
-        const monthlyDataResults = await Promise.all(monthlyDataPromises);
-        const monthlyData = monthlyDataResults.map((result: any) =>
-          typeof result === "bigint" ? Number(result) : result
-        );
-
+        const visitingData = response.data;
+        // const data = visitingData.data.forEach((vdata: any, index: any) => {
+        //   console.log(vdata, index);
+        // });
+        console.log("visitingData--", visitingData);
+        // Check if visitingData is an array
+        const monthlyData = Array.from({ length: 12 }, () => 0);
+        visitingData.data.forEach((data: any) => {
+          const date = new Date(data.date);
+          const month = date.getMonth();
+          monthlyData[month]++;
+        });
         setSeriesData(monthlyData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.log("Error fetching data:", error);
         setError("Error fetching data");
       } finally {
         setLoading(false);
       }
     };
+    if (selectedYear !== null) {
+      fetchData();
+    }
+  }, [selectedYear]);
 
-    fetchData();
-  }, []);
+  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = parseInt(event.target.value);
+    setSelectedYear(year);
+  };
 
   const months = [
     "Jan",
@@ -104,10 +112,6 @@ const ChartOne: React.FC = () => {
       width: [2, 2],
       curve: "straight",
     },
-    // labels: {
-    //   show: false,
-    //   position: "top",
-    // },
     grid: {
       xaxis: {
         lines: {
@@ -166,7 +170,20 @@ const ChartOne: React.FC = () => {
             Total Visitors
           </h5>
         </div>
-        <div>{/* Dropdown for selecting time period */}</div>
+        <div>
+          <select
+            value={selectedYear.toString()}
+            onChange={handleYearChange}
+            className="rounded border border-gray-300"
+          >
+            {/* <option value="">Select Year</option> */}
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       {loading ? (
         <p>Loading chart...</p>

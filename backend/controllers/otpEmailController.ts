@@ -78,13 +78,14 @@ export const generateOtp = async (req: Request, res: Response) => {
     await otpData.save();
     console.log("otpData----", otpData);
 
-    await sendMail({
+    const sendmail = await sendMail({
       email: visitor?.email,
       meetPersonemail: req.body.meetPersonemail,
       subject: "OTP for meeting Invitation",
       message,
       meetpersonmessage,
     });
+    console.log("sendmail", sendmail);
 
     return res.status(200).json({
       status: "success",

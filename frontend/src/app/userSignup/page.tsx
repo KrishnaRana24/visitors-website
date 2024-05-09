@@ -46,7 +46,7 @@ const VisitorAuth: React.FC = () => {
 
         const contractInstance = new web3Instance.eth.Contract(
           contractJson.abi,
-          "0x8fbdBD15920B21fe2ee5649AEC902fB883De4DfA" // Contract address
+          "0x429c4ECca8cAbe50A7741A85F95c0DEF40674FAA" // Contract address
         );
 
         // Set the contract instance in the state
@@ -97,10 +97,13 @@ const VisitorAuth: React.FC = () => {
       const unixTimestamp = moment(visitingData.date, "YYYY-MM-DD").valueOf();
       console.log(unixTimestamp);
 
-      const response = await axios.post("http://localhost:8001/visitorSignup", {
-        ...visitingData,
-        date: unixTimestamp, // Include the formatted date
-      });
+      const response = await axios.post(
+        "http://localhost:8001/visitorRouter/visitorSignup",
+        {
+          ...visitingData,
+          date: unixTimestamp, // Include the formatted date
+        }
+      );
 
       console.log("Server response:", response.data);
 
@@ -151,7 +154,7 @@ const VisitorAuth: React.FC = () => {
       console.log("Data stored successfully on the blockchain.");
       try {
         const otpResponse = await axios.post(
-          "http://localhost:8001/generateOtp",
+          "http://localhost:8001/otpRouter/generateOtp",
           {
             visitorId,
             email: visitingData.email,
@@ -162,7 +165,7 @@ const VisitorAuth: React.FC = () => {
         console.log("OTP generated and sent successfully:", otpResponse.data);
         router.push("/otpPage");
       } catch (error) {
-        console.log(error);
+        console.log("Otp generate error", error);
       }
     } catch (error) {
       console.error("Error storing data:", error);

@@ -1,11 +1,9 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import Breadcrumb from "@/components/Breadcrumb/Breadcrumb";
-import DefaultLayout from "@/components/Layout/DefaultLayout";
 import { createAdmin } from "../../Slice/adminSlice";
 import { useDispatch } from "react-redux";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -28,6 +26,19 @@ const AdminSignup: React.FC = () => {
     rpassword: "",
     photo: null,
   });
+
+  useEffect(() => {
+    const userDataString = localStorage.getItem("userData");
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phoneNumber,
+      }));
+    }
+  }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

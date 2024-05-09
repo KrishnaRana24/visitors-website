@@ -31,9 +31,21 @@ app.use(
   })
 );
 
-app.use("/adminRouter", adminRoute);
-app.use(visitorRouter);
-app.use(otpRouter);
+app.use("/adminRouter", adminRoute, (req: Request, res: Response, err: any) => {
+  res.status(500).json({ message: "invalid Url", err });
+});
+
+app.use(
+  "/visitorRouter",
+  visitorRouter,
+  (req: Request, res: Response, err: any) => {
+    res.status(500).json({ message: "invalid Url", err });
+  }
+);
+
+app.use("/otpRouter", otpRouter, (req: Request, res: Response, err: any) => {
+  res.status(500).json({ message: "invalid Url", err });
+});
 
 app.listen(port, () => {
   console.log(`App is running on ${port}`);

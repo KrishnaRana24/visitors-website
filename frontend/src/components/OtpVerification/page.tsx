@@ -36,10 +36,13 @@ const OTPVerification = ({ email }: { email: string }) => {
       if (index === otp.length - 1) {
         // All OTP digits entered, trigger verification
         const enteredOTP = newOTP.join("");
-        const response = await axios.post("http://localhost:8001/verifyOtp", {
-          email: email,
-          otp: enteredOTP,
-        });
+        const response = await axios.post(
+          "http://localhost:8001/otpRouter/verifyOtp",
+          {
+            email: email,
+            otp: enteredOTP,
+          }
+        );
         console.log(response.data);
         // Handle response here, display appropriate messages to the user
       }

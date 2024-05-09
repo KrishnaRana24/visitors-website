@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { JsonRpcProvider, ethers } from "ethers";
+import axios from "axios";
 import { ApexOptions } from "apexcharts";
 import ReactApexChart from "react-apexcharts";
 
@@ -72,47 +72,46 @@ const options: ApexOptions = {
 };
 
 const ChartTwo: React.FC = () => {
-  const [state, setState] = useState<ChartOneState>({
-    series: [],
-  });
+  const [seriesData, setSeriesData] = useState<number[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const provider = new JsonRpcProvider("http://127.0.0.1:7545");
-        const contractJson = require("/public/contracts/VisitorAuth.json");
-
-        const contract = new ethers.Contract(
-          "0x8fbdBD15920B21fe2ee5649AEC902fB883De4DfA",
-          contractJson.abi,
-          provider
+        // Fetch data from MongoDB URL
+        const response = await axios.get(
+          `http://localhost:8001/visitorRouter/getVisitorData`
         );
 
-        // Determine the current week number
-        const currentDate = new Date();
-        const currentWeek = getWeekNumber(currentDate);
+        const visitingData = response.data;
 
-        // Fetch total visitors for the current week
-        const totalVisitors =
-          await contract.getTotalVisitorsByWeek(currentWeek);
+        // Initialize array to store daily data
+        const dailyData = Array.from({ length: 7 }, () => 0);
 
-        setState({
-          series: [
-            {
-              name: "Visitor",
-              data: [Number(totalVisitors)],
-            },
-          ],
+        // Iterate through the data and count visits for each day of the week
+        visitingData.data.forEach((data: any) => {
+          const date = new Date(data.date);
+          const dayOfWeek = date.getDay();
+          dailyData[dayOfWeek]++;
         });
+
+        setSeriesData(dailyData);
       } catch (error) {
-        console.error("Error fetching visitor data:", error);
-        setError("Error fetching visitor data");
+        console.log("Error fetching data:", error);
+        setError("Error fetching data");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  //   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //     const year = parseInt(event.target.value);
+  //     setSelectedYear(year);
+  //   };
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
@@ -124,7 +123,7 @@ const ChartTwo: React.FC = () => {
           {error && <div>Error: {error}</div>}
           <ReactApexChart
             options={options}
-            series={state.series}
+            series={[{ name: "Visitors", data: seriesData }]}
             type="bar"
             height={350}
           />
@@ -135,9 +134,3 @@ const ChartTwo: React.FC = () => {
 };
 
 export default ChartTwo;
-
-function getWeekNumber(date: Date): number {
-  const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-  const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
-  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-}
