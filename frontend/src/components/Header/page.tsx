@@ -4,29 +4,32 @@ import { useRouter } from "next/navigation";
 import DropdownUser from "./DropdownUser";
 import { useWeb3Modal } from "@web3modal/ethers/react";
 
-const Header = (props: {
-  sidebarOpen: string | boolean | undefined;
+interface HeaderProps {
   setSidebarOpen: (arg0: boolean) => void;
-}) => {
+}
+
+const Header: React.FC<HeaderProps> = (props) => {
   const [connected, setConnected] = useState(false);
-  const { open } = useWeb3Modal();
   const router = useRouter();
+  const { open } = useWeb3Modal();
 
   useEffect(() => {
-    // Open MetaMask dialog upon component mount
-    open();
+    open({ view: "Networks" });
   }, []);
 
   useEffect(() => {
-    // Redirect to dashboard if user is connected
     if (connected) {
       router.push("/dashboard");
     }
   }, [connected]);
 
-  const handleConnect = () => {
-    // Function to handle MetaMask connect
-    open({ view: "Networks" }).then(() => setConnected(true));
+  const handleConnect = async () => {
+    try {
+      await open({ view: "Networks" });
+      setConnected(true);
+    } catch (error) {
+      console.error("Error connecting:", error);
+    }
   };
 
   return (
@@ -38,7 +41,7 @@ const Header = (props: {
               aria-controls="sidebar"
               onClick={(e) => {
                 e.stopPropagation();
-                props.setSidebarOpen(!props.sidebarOpen);
+                props.setSidebarOpen(!props.setSidebarOpen);
               }}
               className="lg:hidden ml-auto -mr-2 p-1 rounded-sm border border-stroke bg-white shadow-sm"
             >
@@ -63,7 +66,7 @@ const Header = (props: {
                 <div>
                   <button
                     className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
-                    onClick={() => open({ view: "Networks" })}
+                    onClick={handleConnect}
                   >
                     <w3m-network-button />
                   </button>

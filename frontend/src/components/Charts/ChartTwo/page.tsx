@@ -54,7 +54,7 @@ const options: ApexOptions = {
   },
   yaxis: {
     min: 0,
-    max: 100,
+    max: 20,
     tickAmount: 10, // Control the number of ticks
   },
   legend: {

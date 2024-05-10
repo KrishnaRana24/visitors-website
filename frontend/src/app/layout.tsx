@@ -6,6 +6,7 @@ import { Web3Modal } from "@/context/web3modal";
 import { Provider } from "react-redux";
 import { store } from "./../app/store/store";
 import dotenv from "dotenv";
+import Web3Provider from "@/components/providers/web3/page";
 
 dotenv.config();
 
@@ -24,9 +25,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Web3Modal>
-          <Provider store={store}>{children}</Provider>
-        </Web3Modal>
+        <Web3Provider>
+          <Web3Modal>
+            <Provider store={store}>{children}</Provider>
+          </Web3Modal>
+        </Web3Provider>
       </body>
     </html>
   );

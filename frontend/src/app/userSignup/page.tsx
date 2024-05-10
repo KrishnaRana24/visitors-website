@@ -4,7 +4,7 @@
 // elapsed since January 1, 1970 (the Unix epoch).
 
 "use client";
-import Web3 from "web3";
+import Web3, { AbiFragment } from "web3";
 import { Contract } from "web3-eth-contract";
 import { AbiItem } from "web3-utils";
 import React, { useEffect, useState } from "react";
@@ -20,7 +20,9 @@ import parsePhoneNumberFromString, {
 const VisitorAuth: React.FC = () => {
   const router = useRouter();
   const [web3, setWeb3] = useState<Web3 | null>(null);
-  const [contract, setContract] = useState<Contract<AbiItem[]> | null>(null);
+  const [contract, setContract] = useState<Contract<AbiFragment[]> | null>(
+    null
+  );
   const [visitingData, setVisitingData] = useState({
     name: "",
     email: "",
@@ -80,20 +82,34 @@ const VisitorAuth: React.FC = () => {
     try {
       e.preventDefault();
 
+      if (!(window as any).ethereum) {
+        console.error("MetaMask is not installed.");
+        return;
+      }
+
+      // Access Ethereum provider
+      const ethereum = (window as any).ethereum;
+
+      // Request account access from the user
+      const data = await ethereum.request({ method: "eth_requestAccounts" });
+      console.log("eth data---", data);
+
+      // Create a Web3 instance using MetaMask provider
+      const web3 = new Web3(ethereum);
+
       if (!contract || !visitingData || !web3) {
         console.error("Contract or data is not available.");
         return;
       }
       console.log("visitingData----", visitingData);
 
-      // console.log(web3);
+      console.log(web3);
 
       const accounts = await web3.eth.getAccounts();
       const account = accounts[0];
       console.log("Connected account:", account);
 
       // Format the date string to YYYY-MM-DD
-      // const formattedDate = moment(visitingData.date).format("YYYY-MM-DD");
       const unixTimestamp = moment(visitingData.date, "YYYY-MM-DD").valueOf();
       console.log(unixTimestamp);
 
@@ -101,7 +117,7 @@ const VisitorAuth: React.FC = () => {
         "http://localhost:8001/visitorRouter/visitorSignup",
         {
           ...visitingData,
-          date: unixTimestamp, // Include the formatted date
+          date: unixTimestamp,
         }
       );
 
@@ -150,23 +166,11 @@ const VisitorAuth: React.FC = () => {
         });
 
       console.log("Transaction hash:", tx.transactionHash);
-
+      // Display a message to indicate that the transaction was successful
       console.log("Data stored successfully on the blockchain.");
-      try {
-        const otpResponse = await axios.post(
-          "http://localhost:8001/otpRouter/generateOtp",
-          {
-            visitorId,
-            email: visitingData.email,
-            meetPersonemail: visitingData.meetPersonemail,
-          }
-        );
 
-        console.log("OTP generated and sent successfully:", otpResponse.data);
-        router.push("/otpPage");
-      } catch (error) {
-        console.log("Otp generate error", error);
-      }
+      // Redirect to OTP page or perform any other action after successful transaction
+      router.push("/otpPage");
     } catch (error) {
       console.error("Error storing data:", error);
     }

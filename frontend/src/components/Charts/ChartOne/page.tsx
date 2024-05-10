@@ -158,7 +158,7 @@ const ChartOne: React.FC = () => {
         },
       },
       min: 0,
-      max: 100,
+      max: 30,
     },
   };
 

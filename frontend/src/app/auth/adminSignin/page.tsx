@@ -33,12 +33,6 @@ const AdminSignin: React.FC = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // const formDataToSend = new FormData();
-      // formDataToSend.append("email", formData.email);
-      // formDataToSend.append("password", formData.password);
-      // console.log(formData);
-
-      // const token = dispatch(adminLogin(formData));
       const token = await dispatch(adminLogin(formData));
       console.log("client side token--", token);
       setIsAdminSignedIn(true);
