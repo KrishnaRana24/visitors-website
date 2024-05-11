@@ -3,15 +3,18 @@ import OTP from "../models/otp_model";
 import otpGenerator from "otp-generator";
 import nodemailer from "nodemailer";
 import Visitor from "../models/visitors_model";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 var transport = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: process.env.MAIL_HOST,
   port: 587,
   secure: false,
   ignoreTLS: false,
   auth: {
-    user: "rana.krishna.dcs24@vnsgu.ac.in",
-    pass: "rana@12345",
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
   },
 });
 
@@ -25,18 +28,18 @@ export const sendMail = async (option: {
 }) => {
   // Define email options for first email
   const mailOption1 = {
-    from: "rana.krishna.dcs24@vnsgu.ac.in",
+    from: process.env.MAIL_USER,
     to: option.email,
     subject: option.subject,
-    text: option.message,
+    html: option.message,
   };
 
   // Define email options for second email
   const mailOption2 = {
-    from: "rana.krishna.dcs24@vnsgu.ac.in",
+    from: process.env.MAIL_USER,
     to: option.meetPersonemail,
     subject: option.subject,
-    text: option.meetpersonmessage,
+    html: option.meetpersonmessage,
   };
 
   // Send first email
@@ -71,9 +74,17 @@ export const generateOtp = async (req: Request, res: Response) => {
       return res.json({ message: "there is no data " });
     }
 
-    const message = `Your OTP is valid for 5 minutes: ${otp}`;
-    const meetpersonmessage = `${data_name} is waiting to meet to you for some talk you can communicate with his/her ${visitor.email} or ${data_phone}`;
+    const message = `
+      <p style="font-size: 16px; color: #333; line-height: 1.5;">
+        Your OTP is valid for 5 minutes: <strong>${otp}</strong>
+      </p>
+    `;
 
+    const meetpersonmessage = `
+      <p style="font-size: 16px; color: #333; line-height: 1.5;">
+        ${data_name} is waiting to meet you for some talk. You can communicate with them via email at ${visitor.email} or by phone at ${data_phone}.
+      </p>
+    `;
     const otpData = new OTP({ otp, visitor });
     await otpData.save();
     console.log("otpData----", otpData);

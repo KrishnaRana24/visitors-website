@@ -94,7 +94,7 @@ export const verifyToken = async (
   });
 };
 //get admin data
-export const getAdmin = async (req: CustomRequest, res: Response) => {
+export const getAdmin = async (req: Request, res: Response) => {
   let data;
   try {
     data = await Admin.find();

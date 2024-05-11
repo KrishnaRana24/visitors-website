@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import adminRoute from "./routes/admin_router";
 import visitorRouter from "./routes/visitor_router";
 import otpRouter from "./routes/otp_router";
+import reviewRouter from "./routes/review_router";
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -44,6 +45,11 @@ app.use(
 );
 
 app.use("/otpRouter", otpRouter, (req: Request, res: Response, err: any) => {
+  res.status(500).json({ message: "invalid Url", err });
+});
+
+// app.use(reviewRouter);
+app.use("/review", reviewRouter, (req: Request, res: Response, err: any) => {
   res.status(500).json({ message: "invalid Url", err });
 });
 

@@ -6,15 +6,10 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/userSignup/page": [
+    "/checkoutQr/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/userSignup/page.js"
-    ],
-    "/otpPage/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/otpPage/page.js"
+      "static/chunks/app/checkoutQr/page.js"
     ]
   }
 }

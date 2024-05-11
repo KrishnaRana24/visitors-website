@@ -1,5 +1,4 @@
 import { Schema, model, Document, Types } from "mongoose";
-import mailSender from "../utils/sendMail";
 
 interface Otp extends Document {
   otp: string;

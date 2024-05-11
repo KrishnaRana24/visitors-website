@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const OTPVerification = ({ email }: { email: string }) => {
   const [otp, setOTP] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
+  const router = useRouter();
   useEffect(() => {
     inputRefs.current[0]?.focus(); // Focus on the first input box when component mounts
   }, []);
@@ -45,6 +46,8 @@ const OTPVerification = ({ email }: { email: string }) => {
         );
         console.log(response.data);
         // Handle response here, display appropriate messages to the user
+
+        router.push("/userWelcome");
       }
     } catch (error) {
       console.log(error);

@@ -42,6 +42,11 @@ const TableOne = () => {
         console.log(contract);
 
         const allVisitors = await contract.getAllVisitors();
+        console.log(
+          "date",
+          typeof allVisitors[0].date,
+          Number(allVisitors[0].date)
+        );
 
         const formattedVisitorData = allVisitors.map((visitors: any) => ({
           name: visitors.name,
@@ -52,7 +57,7 @@ const TableOne = () => {
           types: visitors.types,
           toMeet: visitors.toMeet,
           meetPersonEmail: visitors.meetPersonemail,
-          date: Number(visitors.date) * 1000, // Convert Unix timestamp to JavaScript date
+          date: moment(Number(visitors.date)).format("L"), // Convert Unix timestamp to JavaScript date
         }));
 
         setVisitorData(formattedVisitorData);
@@ -117,28 +122,6 @@ const TableOne = () => {
       </h4>
 
       {/* convert timestamp */}
-      <div className="flex items-center mb-4">
-        <h5 className="mr-2 px-2 py-1 text-black">Enter Timestamp :</h5>
-        <input
-          onChange={handleInputChange}
-          type="text"
-          placeholder="Enter date to convert"
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-        />
-        <button
-          className="ml-4 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
-          onClick={handleConvert}
-        >
-          Convert
-        </button>
-        {/* Display converted timestamp */}
-        <input
-          type="text"
-          value={convertedDate}
-          readOnly
-          className="px-3 py-2 ml-4 border border-gray-300 rounded-md focus:outline-none"
-        />
-      </div>
 
       {/* Search Inputs */}
       <div className="flex mb-4">
@@ -167,14 +150,14 @@ const TableOne = () => {
           onChange={(e) => {
             setSearchToMeet(e.target.value);
           }}
-          className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-blue-500"
+          className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-gray-500"
         />
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full table">
+        <table className="w-full bg-gray-200">
           {/* Table Headers */}
           <thead>
-            <tr className="bg-blue-200 dark:bg-gray-800 text-black">
+            <tr className="bg-blue-200 border-bodydark2 dark:bg-gray-900 text-black">
               <th className="px-4 py-2">ID</th>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Address</th>

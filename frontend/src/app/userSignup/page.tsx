@@ -168,9 +168,21 @@ const VisitorAuth: React.FC = () => {
       console.log("Transaction hash:", tx.transactionHash);
       // Display a message to indicate that the transaction was successful
       console.log("Data stored successfully on the blockchain.");
+      try {
+        const otpResponse = await axios.post(
+          "http://localhost:8001/otpRouter/generateOtp",
+          {
+            visitorId,
+            email: visitingData.email,
+            meetPersonemail: visitingData.meetPersonemail,
+          }
+        );
 
-      // Redirect to OTP page or perform any other action after successful transaction
-      router.push("/otpPage");
+        console.log("OTP generated and sent successfully:", otpResponse.data);
+        router.push("/otpPage");
+      } catch (error) {
+        console.log("error while generated otp:", error);
+      }
     } catch (error) {
       console.error("Error storing data:", error);
     }

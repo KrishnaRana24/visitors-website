@@ -1,5 +1,3 @@
-// hero-section.js
-
 import HeroSection from "@/components/HeroSection/page";
 
 function HeroSectionPage() {

@@ -6,11 +6,6 @@ export default function HeroSection() {
   const websiteUrl = "http://localhost:3000/userSignup";
   const [qrData, setQrData] = useState(websiteUrl);
 
-  // Function to generate a random data string for the QR code
-  function generateRandomData() {
-    return `/userSignup?${Math.random().toString(36).substr(2, 9)}`;
-  }
-
   // Handler function for the button click event
   function handleGenerateQR() {
     setQrData(websiteUrl); // Generate and set a new random data string
