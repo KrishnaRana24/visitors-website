@@ -67,42 +67,4 @@ contract VisitorAuth {
         }
         return allVisitors;
     }
-
-    // Function to calculate total visitors by month
-    function getTotalVisitorsByMonth(
-        uint256 _month
-    ) public view returns (uint256) {
-        uint256 totalVisitors = 0;
-        Visitor[] memory allVisitors = getAllVisitors();
-        for (uint256 i = 0; i < allVisitors.length; i++) {
-            if (getMonth(allVisitors[i].date) == _month) {
-                totalVisitors++;
-            }
-        }
-        return totalVisitors;
-    }
-
-    // Function to calculate total visitors by week
-    function getTotalVisitorsByWeek(
-        uint256 _week
-    ) public view returns (uint256) {
-        uint256 totalVisitors = 0;
-        Visitor[] memory allVisitors = getAllVisitors();
-        for (uint256 i = 0; i < allVisitors.length; i++) {
-            if (getWeek(allVisitors[i].date) == _week) {
-                totalVisitors++;
-            }
-        }
-        return totalVisitors;
-    }
-
-    // Internal function to extract month from Unix timestamp
-    function getMonth(uint256 _timestamp) internal pure returns (uint256) {
-        return ((_timestamp / 2629743) % 12) + 1; // Assuming 30 days in a month
-    }
-
-    // Internal function to extract week from Unix timestamp
-    function getWeek(uint256 _timestamp) internal pure returns (uint256) {
-        return ((_timestamp / 604800) % 52) + 1; // Assuming 7 days in a week
-    }
 }

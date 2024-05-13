@@ -48,7 +48,7 @@ const VisitorAuth: React.FC = () => {
 
         const contractInstance = new web3Instance.eth.Contract(
           contractJson.abi,
-          "0x429c4ECca8cAbe50A7741A85F95c0DEF40674FAA" // Contract address
+          "0x23F6c77273528b88A2595BfBb3DE5A1b35cB435c" // Contract address
         );
 
         // Set the contract instance in the state
@@ -82,20 +82,8 @@ const VisitorAuth: React.FC = () => {
     try {
       e.preventDefault();
 
-      if (!(window as any).ethereum) {
-        console.error("MetaMask is not installed.");
-        return;
-      }
-
-      // Access Ethereum provider
-      const ethereum = (window as any).ethereum;
-
-      // Request account access from the user
-      const data = await ethereum.request({ method: "eth_requestAccounts" });
-      console.log("eth data---", data);
-
       // Create a Web3 instance using MetaMask provider
-      const web3 = new Web3(ethereum);
+      const web3 = new Web3();
 
       if (!contract || !visitingData || !web3) {
         console.error("Contract or data is not available.");

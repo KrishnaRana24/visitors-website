@@ -3,43 +3,44 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { JsonRpcProvider, ethers } from "ethers";
 import ReactPaginate from "react-paginate";
 import moment from "moment";
+import axios from "axios";
+
+interface Visitor {
+  name: string;
+  email: string;
+  address: string;
+  phone: string;
+  purpose: string;
+  types: string;
+  toMeet: string;
+  meetPersonEmail: string;
+  date: string;
+}
 
 const TableOne = () => {
-  const [visitorData, setVisitorData] = useState<
-    {
-      name: string;
-      email: string;
-      address: string;
-      phone: string;
-      purpose: string;
-      types: string;
-      toMeet: string;
-      meetPersonEmail: string;
-      date: string;
-    }[]
-  >([]);
-
+  const [visitorData, setVisitorData] = useState<Visitor[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
   const [searchName, setSearchName] = useState("");
   const [searchTypes, setSearchTypes] = useState("");
   const [searchToMeet, setSearchToMeet] = useState("");
-  const [inputTimestamp, setInputTimestamp] = useState<string>("");
-  const [convertedDate, setConvertedDate] = useState<string>("");
+  const [filteredData, setFilteredData] = useState<Visitor[]>([]);
+  const [loading, setLoading] = useState(false); // Add loading state
+
   const tableRef = useRef(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch visitor data
         const provider = new JsonRpcProvider("http://127.0.0.1:7545");
-        const contractJson = require("/public/contracts/VisitorAuth.json"); // Ensure the path is correct
+        const contractJson = require("/public/contracts/VisitorAuth.json");
 
         const contract = new ethers.Contract(
-          "0x429c4ECca8cAbe50A7741A85F95c0DEF40674FAA", // Contract address
+          "0x23F6c77273528b88A2595BfBb3DE5A1b35cB435c",
           contractJson.abi,
           provider
         );
-
-        console.log(contract);
 
         const allVisitors = await contract.getAllVisitors();
         console.log(
@@ -57,11 +58,11 @@ const TableOne = () => {
           types: visitors.types,
           toMeet: visitors.toMeet,
           meetPersonEmail: visitors.meetPersonemail,
-          date: moment(Number(visitors.date)).format("L"), // Convert Unix timestamp to JavaScript date
+          date: moment(Number(visitors.date)),
         }));
 
         setVisitorData(formattedVisitorData);
-        console.log("Fetched visitor data:", formattedVisitorData);
+        setFilteredData(formattedVisitorData); // Initially set filteredData to all visitor data
       } catch (error) {
         console.error("Error fetching visitor data:", error);
       }
@@ -70,50 +71,94 @@ const TableOne = () => {
     fetchData();
   }, []);
 
-  // Change page
-  const handlePageChange = ({ selected }: { selected: number }) =>
-    setCurrentPage(selected);
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, searchName, searchTypes, searchToMeet]);
 
-  const filteredData = visitorData.filter((visitor) => {
-    return (
-      visitor.name.toLowerCase().includes(searchName.toLowerCase()) &&
-      visitor.types.toLowerCase().includes(searchTypes.toLowerCase()) &&
-      visitor.toMeet.toLowerCase().includes(searchToMeet.toLowerCase())
-    );
-  });
+  const fetchData = async () => {
+    try {
+      setLoading(true); // Set loading to true when fetching data
+      const response = await axios.get(
+        `http://localhost:8001/visitorRouter/pagination?page=${currentPage + 1}&pageSize=${itemsPerPage}&name=${searchName}&types=${searchTypes}&toMeet=${searchToMeet}`
+      );
 
-  console.log("filterData", filteredData);
-
-  // Logic to calculate the index of the first and last item of the current page
-  const indexOfLastItem = (currentPage + 1) * itemsPerPage;
-  const indexOfFirstItem = currentPage * itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
-  const handleConvert = () => {
-    // Check if the input timestamp is a valid number
-    const trimmedInput: string = inputTimestamp.trim();
-    console.log("trimmedInput---", trimmedInput);
-
-    if (isNaN(parseInt(trimmedInput))) {
-      console.log("Invalid timestamp");
-      return;
+      const { visitors } = response.data;
+      setVisitorData(visitors);
+      setLoading(false); // Set loading to false after fetching data
+    } catch (error) {
+      console.error("Error fetching visitor data:", error);
+      setLoading(false); // Set loading to false if an error occurs
     }
-
-    const timestampInMilliseconds: number = parseInt(trimmedInput);
-    console.log("timestamp---", timestampInMilliseconds);
-
-    // Use moment.js to convert Unix milliseconds to the desired format
-    const formattedDate: string = moment
-      .unix(timestampInMilliseconds / 1000000)
-      .format("YYYY-MM-DD");
-    console.log("Formatted timestamp--", formattedDate);
-
-    setConvertedDate(formattedDate);
   };
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputTimestamp(e.target.value);
+  // Function to handle search by name
+  const handleSearchNameChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchName(value);
+    filterData(value, searchTypes, searchToMeet);
   };
+
+  // Function to handle search by types
+  const handleSearchTypesChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTypes(value);
+    filterData(searchName, value, searchToMeet);
+  };
+
+  // Function to handle search by toMeet
+  const handleSearchToMeetChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchToMeet(value);
+    filterData(searchName, searchTypes, value);
+  };
+
+  const filterData = async (name: string, types: string, toMeet: string) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8001/visitorRouter/filterdata",
+        {
+          name,
+          types,
+          toMeet,
+        }
+      );
+      console.log("ResponseFilterData--", typeof response);
+      if (Array.isArray(response.data)) {
+        setFilteredData(response.data);
+      } else if (
+        response.data.filteredData &&
+        Array.isArray(response.data.filteredData)
+      ) {
+        setFilteredData(response.data.filteredData);
+      } else {
+        // Convert the response data to an array
+        const dataArray: Visitor[] = Object.values(response.data) as Visitor[];
+        if (Array.isArray(dataArray)) {
+          setFilteredData(dataArray);
+        } else {
+          console.log(
+            "Unable to convert API response to array:",
+            response.data
+          );
+          setFilteredData([]);
+        }
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error filtering visitor data:", error);
+    }
+  };
+
+  const handlePageChange = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected);
+  };
+
+  const indexOfLastItem: number = (currentPage + 1) * itemsPerPage;
+  const indexOfFirstItem: number = currentPage * itemsPerPage;
+  const currentItems: Visitor[] = filteredData.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
   return (
     <div className="object-cover rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -121,43 +166,35 @@ const TableOne = () => {
         Visitor Details
       </h4>
 
-      {/* convert timestamp */}
-
       {/* Search Inputs */}
       <div className="flex mb-4">
         <input
           type="text"
-          placeholder="Search by visitor Name"
+          placeholder="Search by name"
           value={searchName}
-          onChange={(e) => {
-            setSearchName(e.target.value);
-          }}
+          onChange={handleSearchNameChange}
           className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-blue-500 "
         />
         <input
           type="text"
           placeholder="Search by visitor Types"
           value={searchTypes}
-          onChange={(e) => {
-            setSearchTypes(e.target.value);
-          }}
+          onChange={handleSearchTypesChange}
           className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-blue-500"
         />
         <input
           type="text"
           placeholder="Search by To Meet"
           value={searchToMeet}
-          onChange={(e) => {
-            setSearchToMeet(e.target.value);
-          }}
+          onChange={handleSearchToMeetChange}
           className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-gray-500"
-        />
+        />{" "}
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto ">
         <table className="w-full bg-gray-200">
           {/* Table Headers */}
-          <thead>
-            <tr className="bg-blue-200 border-bodydark2 dark:bg-gray-900 text-black">
+          <thead className="">
+            <tr className="bg-blue-200 dark:bg-gray-900 text-black border-b border-black">
               <th className="px-4 py-2">ID</th>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Address</th>
@@ -228,6 +265,7 @@ const TableOne = () => {
         breakLabel={"..."}
         breakClassName={"px-3 py-1 mr-2"}
       />
+
       {/* Print table option  */}
       <div className="flex justify-end mb-4">
         <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600">

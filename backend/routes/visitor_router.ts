@@ -1,10 +1,17 @@
 import express, { Router } from "express";
-import { getVisitorData, visitorSign } from "../controllers/visitorController";
+import {
+  filterData,
+  getVisitorData,
+  pagination,
+  visitorSign,
+} from "../controllers/visitorController";
 
 const router: Router = express.Router();
 
 router.post("/visitorSignup", visitorSign);
 router.get("/getVisitorData", getVisitorData);
+router.post("/filterdata", filterData);
+router.get("/pagination", pagination);
 
 export default router;
 // export const getVisitorData = async (req: Request, res: Response) => {

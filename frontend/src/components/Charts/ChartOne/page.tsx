@@ -22,17 +22,15 @@ const ChartOne: React.FC = () => {
         );
 
         const visitingData = response.data;
-        // const data = visitingData.data.forEach((vdata: any, index: any) => {
-        //   console.log(vdata, index);
-        // });
-        console.log("visitingData--", visitingData);
-        // Check if visitingData is an array
         const monthlyData = Array.from({ length: 12 }, () => 0);
+
+        // Iterate over each visitor record and aggregate visitor count by month
         visitingData.data.forEach((data: any) => {
           const date = new Date(data.date);
           const month = date.getMonth();
           monthlyData[month]++;
         });
+
         setSeriesData(monthlyData);
       } catch (error) {
         console.log("Error fetching data:", error);
