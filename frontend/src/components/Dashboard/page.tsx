@@ -10,6 +10,7 @@ import Web3 from "web3";
 import { FaUser } from "react-icons/fa";
 import { FaEthereum } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
+import ChartFour from "../Charts/ChartFour/page";
 
 const Adashboard: React.FC = () => {
   const [totalVisitors, setTotalVisitors] = useState<number>(0);
@@ -151,11 +152,14 @@ const Adashboard: React.FC = () => {
           <ChartOne />
           <ChartTwo />
           <ChartThree />
-          {/* <MapOne /> */}
+          {/* Adjusted ChartFour component */}
+          <div className="col-span-12 md:col-span-6 w-150 h-50 xl:col-span-2 2xl:col-span-3">
+            <ChartFour />
+          </div>
+
           <div className="col-span-12 xl:col-span-12">
             <TableOne />
           </div>
-          {/* <ChatCard /> */}
         </div>
       </DefaultLayout>
     </>

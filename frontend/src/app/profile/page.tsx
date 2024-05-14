@@ -6,9 +6,7 @@ import Breadcrumb from "@/components/Breadcrumb/Breadcrumb";
 import axios from "axios";
 
 const Profile = () => {
-  const [photoPath, setPhotoPath] = useState<string | null>(
-    "/images/user.jpeg"
-  ); // Default photo path
+  const [photoPath, setPhotoPath] = useState<string | null>("");
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -47,7 +47,7 @@ const imageUpload = multer({
     cb(null, true);
   },
 });
-
+router.post("/uploadImage", imageUpload.single("photo"));
 router.post("/adminauth", imageUpload.single("photo"), adminSign);
 router.post("/adminlogin", adminLogin);
 router.get("/protectedroute", verifyToken);

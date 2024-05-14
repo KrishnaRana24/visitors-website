@@ -58,7 +58,7 @@ const TableOne = () => {
           types: visitors.types,
           toMeet: visitors.toMeet,
           meetPersonEmail: visitors.meetPersonemail,
-          date: moment(Number(visitors.date)),
+          date: moment(Number(visitors.date) * 1000).format("DD/MM/YYYY"),
         }));
 
         setVisitorData(formattedVisitorData);
@@ -160,6 +160,84 @@ const TableOne = () => {
     indexOfLastItem
   );
 
+  const preparePrintableContent = () => {
+    const printableContent = `
+      <html>
+        <head>
+          <title>Visitor Details</title>
+          <style>
+            /* Add any custom styles for printing here */
+            /* Example: */
+            table {
+              border-collapse: collapse;
+              width: 100%;
+            }
+            th, td {
+              border: 1px solid black;
+              padding: 8px;
+              text-align: left;
+            }
+            th {
+              background-color: #f2f2f2;
+            }
+          </style>
+        </head>
+        <body>
+          <h2>Visitor Details</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Email</th>
+                <th>Phone No.</th>
+                <th>Purpose</th>
+                <th>Types</th>
+                <th>To Meet</th>
+                <th>Meet Person Email</th>
+                <th>Date Of Visiting</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${visitorData.map(
+                (visitor, index) => `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${visitor.name}</td>
+                    <td>${visitor.address}</td>
+                    <td>${visitor.email}</td>
+                    <td>${visitor.phone}</td>
+                    <td>${visitor.purpose}</td>
+                    <td>${visitor.types}</td>
+                    <td>${visitor.toMeet}</td>
+                    <td>${visitor.meetPersonEmail}</td>
+                    <td>${visitor.date}</td>
+                  </tr>
+                `
+              )}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+    return printableContent;
+  };
+
+  // Function to handle printing
+  const handlePrint = () => {
+    const content = preparePrintableContent();
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.print();
+    } else {
+      console.error("Unable to open print window.");
+    }
+  };
+
   return (
     <div className="object-cover rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
@@ -191,20 +269,24 @@ const TableOne = () => {
         />{" "}
       </div>
       <div className="overflow-x-auto ">
-        <table className="w-full bg-gray-200">
+        <table className="w-full bg-gray-200 border border-gray-200">
           {/* Table Headers */}
           <thead className="">
             <tr className="bg-blue-200 dark:bg-gray-900 text-black border-b border-black">
-              <th className="px-4 py-2">ID</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Address</th>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Phone No.</th>
-              <th className="px-4 py-2">Purpose</th>
-              <th className="px-4 py-2">Types</th>
-              <th className="px-4 py-2">To Meet</th>
-              <th className="px-4 py-2">Meet Person Email</th>
-              <th className="px-4 py-2">Date Of Visiting</th>
+              <th className="border border-bodydark2 px-4 py-2">ID</th>
+              <th className="border border-bodydark2 px-4 py-2">Name</th>
+              <th className="border border-bodydark2 px-4 py-2">Address</th>
+              <th className="border border-bodydark2 px-4 py-2">Email</th>
+              <th className="border border-bodydark2 px-4 py-2">Phone No.</th>
+              <th className="border border-bodydark2 px-4 py-2">Purpose</th>
+              <th className="border border-bodydark2 px-4 py-2">Types</th>
+              <th className="border border-bodydark2 px-4 py-2">To Meet</th>
+              <th className="border border-bodydark2 px-4 py-2">
+                Meet Person Email
+              </th>
+              <th className="border border-bodydark2 px-4 py-2">
+                Date Of Visiting
+              </th>
             </tr>
           </thead>
           {/* Table Body */}
@@ -268,7 +350,10 @@ const TableOne = () => {
 
       {/* Print table option  */}
       <div className="flex justify-end mb-4">
-        <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600">
+        <button
+          onClick={handlePrint}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+        >
           Print Table data
         </button>
       </div>
