@@ -79,7 +79,7 @@ const TableOne = () => {
     try {
       setLoading(true); // Set loading to true when fetching data
       const response = await axios.get(
-        `http://localhost:8001/visitorRouter/pagination?page=${currentPage + 1}&pageSize=${itemsPerPage}&name=${searchName}&types=${searchTypes}&toMeet=${searchToMeet}`
+        `http://localhost:8000/visitorRouter/pagination?page=${currentPage + 1}&pageSize=${itemsPerPage}&name=${searchName}&types=${searchTypes}&toMeet=${searchToMeet}`
       );
 
       const { visitors } = response.data;
@@ -115,37 +115,43 @@ const TableOne = () => {
   const filterData = async (name: string, types: string, toMeet: string) => {
     try {
       const response = await axios.post(
-        "http://localhost:8001/visitorRouter/filterdata",
+        "http://localhost:8000/visitorRouter/filterdata",
         {
           name,
           types,
           toMeet,
         }
       );
-      console.log("ResponseFilterData--", typeof response);
+
+      // Extract filtered data from the response
+      let filteredData: Visitor[] = [];
+
       if (Array.isArray(response.data)) {
-        setFilteredData(response.data);
+        filteredData = response.data;
       } else if (
         response.data.filteredData &&
         Array.isArray(response.data.filteredData)
       ) {
-        setFilteredData(response.data.filteredData);
+        filteredData = response.data.filteredData;
       } else {
-        // Convert the response data to an array
+        // Convert the response data to an array if it's not already an array
         const dataArray: Visitor[] = Object.values(response.data) as Visitor[];
         if (Array.isArray(dataArray)) {
-          setFilteredData(dataArray);
+          filteredData = dataArray;
         } else {
           console.log(
             "Unable to convert API response to array:",
             response.data
           );
-          setFilteredData([]);
         }
       }
-      setLoading(false);
+      // Set the filtered data
+      setFilteredData(filteredData);
     } catch (error) {
       console.error("Error filtering visitor data:", error);
+    } finally {
+      // Ensure loading state is always updated
+      setLoading(false);
     }
   };
 
@@ -273,18 +279,34 @@ const TableOne = () => {
           {/* Table Headers */}
           <thead className="">
             <tr className="bg-blue-200 dark:bg-gray-900 text-black border-b border-black">
-              <th className="border border-bodydark2 px-4 py-2">ID</th>
-              <th className="border border-bodydark2 px-4 py-2">Name</th>
-              <th className="border border-bodydark2 px-4 py-2">Address</th>
-              <th className="border border-bodydark2 px-4 py-2">Email</th>
-              <th className="border border-bodydark2 px-4 py-2">Phone No.</th>
-              <th className="border border-bodydark2 px-4 py-2">Purpose</th>
-              <th className="border border-bodydark2 px-4 py-2">Types</th>
-              <th className="border border-bodydark2 px-4 py-2">To Meet</th>
-              <th className="border border-bodydark2 px-4 py-2">
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
+                ID
+              </th>
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
+                Name
+              </th>
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
+                Address
+              </th>
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
+                Email
+              </th>
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
+                Phone No.
+              </th>
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
+                Purpose
+              </th>
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
+                Types
+              </th>
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
+                To Meet
+              </th>
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
                 Meet Person Email
               </th>
-              <th className="border border-bodydark2 px-4 py-2">
+              <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
                 Date Of Visiting
               </th>
             </tr>
@@ -311,7 +333,7 @@ const TableOne = () => {
                 <td className="border  border-bodydark2 px-4 py-2 text-black">
                   {visitor.phone}
                 </td>
-                <td className="border  border-bodydark2 px-4 py-2 text-black">
+                <td className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap text-black">
                   {visitor.purpose}
                 </td>
                 <td className="border  border-bodydark2 px-4 py-2 text-black">

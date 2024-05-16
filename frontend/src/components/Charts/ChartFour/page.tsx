@@ -7,7 +7,6 @@ import { ApexOptions } from "apexcharts";
 interface DataPoint {
   x: number;
   y: number;
-  z: number;
 }
 
 const ChartFour: React.FC = () => {
@@ -18,29 +17,34 @@ const ChartFour: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8001/visitorRouter/getVisitorData"
-        );
-        const visitorData = response.data.data; // Extracting the data array from response.data
-        console.log("Visitor Data:", visitorData);
+        const [visitorResponse, reviewResponse] = await Promise.all([
+          axios.get("http://localhost:8000/visitorRouter/getVisitorData"),
+          axios.get("http://localhost:8000/review/getReview"),
+        ]);
 
-        if (Array.isArray(visitorData) && visitorData.length > 0) {
-          const formattedData: DataPoint[] = visitorData.map(
-            (visitor: any) => ({
-              x: visitor.x,
-              y: visitor.y,
-              z: visitor.z,
-            })
-          );
+        const visitorsData = visitorResponse.data.data;
+        const reviewsData = reviewResponse.data.data;
 
-          setChartData(formattedData);
-        } else {
-          setError("No visitor data found!");
-        }
+        const visitorsChartData = visitorsData.map((item: any) => ({
+          x: new Date(item.date).getMonth() + 1,
+          y: item.totalVisitors,
+        }));
+
+        const reviewsChartData = reviewsData.map((item: any) => ({
+          x: new Date(item.date).getMonth() + 1,
+          y: item.totalReviews,
+        }));
+
+        const combinedData: DataPoint[] = [
+          ...visitorsChartData,
+          ...reviewsChartData,
+        ];
+
+        setChartData(combinedData);
+        setLoading(false);
       } catch (error) {
-        console.log("Error fetching data:", error);
-        setError("Error fetching data");
-      } finally {
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch data. Please try again.");
         setLoading(false);
       }
     };
@@ -50,7 +54,7 @@ const ChartFour: React.FC = () => {
 
   const options: ApexOptions = {
     chart: {
-      type: "scatter",
+      type: "area",
       toolbar: {
         show: false,
       },
@@ -74,31 +78,68 @@ const ChartFour: React.FC = () => {
         },
       },
     },
+    title: {
+      text: "Visitor Area Chart",
+      align: "left",
+    },
+    subtitle: {
+      text: "No of visitor",
+      align: "left",
+    },
+    legend: {
+      show: true,
+      position: "top",
+    },
+    grid: {
+      show: true,
+      borderColor: "#f0f0f0",
+    },
+    markers: {
+      size: 6,
+      strokeWidth: 0,
+      hover: {
+        sizeOffset: 2,
+      },
+    },
+    tooltip: {
+      enabled: true,
+      x: {
+        formatter: (value: number) => value.toFixed(2),
+      },
+      y: {
+        formatter: (value: number) => {
+          const formattedValue = value > 20 ? 20 : value; // Limiting maximum value to 20
+          return formattedValue.toFixed(2);
+        },
+      },
+    },
+
+    series: [
+      {
+        name: "Visitor Data",
+        data: chartData,
+      },
+    ],
   };
-
-  if (loading) {
-    return <div className="text-center mt-4">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center mt-4">Error: {error}</div>;
-  }
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
-      <div>
-        <h5 className="text-xl font-semibold text-black dark:text-white">
-          Visitor Data Scatter Chart
-        </h5>
-      </div>
-      <div className="w-full h-96">
+      <h5 className="text-xl font-semibold text-black dark:text-white">
+        Visitor and Review Area Chart
+      </h5>
+      {loading && <p className="text-center mt-4">Loading...</p>}
+      {error && <p className="text-center mt-4">Error: {error}</p>}
+      {!loading && !error && chartData.length === 0 && (
+        <p className="text-center mt-4">No data available</p>
+      )}
+      {!loading && !error && chartData.length > 0 && (
         <ReactApexChart
           options={options}
-          series={[{ data: chartData }]}
-          type="scatter"
+          series={[{ name: "Data", data: chartData }]}
+          type="area"
           height={400}
         />
-      </div>
+      )}
     </div>
   );
 };

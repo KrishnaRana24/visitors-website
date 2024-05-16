@@ -22,7 +22,7 @@ const TableTwo = () => {
     const fetchReviewData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8001/review/getReview"
+          "http://localhost:8000/review/getReview"
         );
 
         if (Array.isArray(response.data.data)) {

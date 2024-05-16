@@ -81,7 +81,7 @@ const ChartTwo: React.FC = () => {
       try {
         // Fetch data from MongoDB URL
         const response = await axios.get(
-          `http://localhost:8001/visitorRouter/getVisitorData`
+          `http://localhost:8000/visitorRouter/getVisitorData`
         );
 
         const visitingData = response.data;

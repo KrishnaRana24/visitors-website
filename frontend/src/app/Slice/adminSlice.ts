@@ -25,7 +25,7 @@ export const createAdmin = createAsyncThunk(
   "admin/createAdmin",
   async (formData: any) => {
     const response = await axios.post(
-      "http://localhost:8001/adminRouter/adminauth",
+      "http://localhost:8000/adminRouter/adminauth",
       formData
     );
     console.log("adminData Responce", response);

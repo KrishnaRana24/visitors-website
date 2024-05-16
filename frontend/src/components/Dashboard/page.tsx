@@ -12,17 +12,16 @@ import { FaEthereum } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import ChartFour from "../Charts/ChartFour/page";
 
+const web3 = new Web3("http://localhost:7545");
 const Adashboard: React.FC = () => {
   const [totalVisitors, setTotalVisitors] = useState<number>(0);
   const [etherBalance, setEtherBalance] = useState<number>(0);
   const [totalReviews, setTotalReviews] = useState<number>(0);
 
-  const web3 = new Web3("http://localhost:7545");
-
   const fetchTotalVisitors = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8001/visitorRouter/getVisitorData"
+        "http://localhost:8000/visitorRouter/getVisitorData"
       );
       console.log("Response----", response.data);
       console.log("Data type:", typeof response.data);
@@ -60,7 +59,7 @@ const Adashboard: React.FC = () => {
   const fetchTotalReviews = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8001/review/getReview"
+        "http://localhost:8000/review/getReview"
       );
       console.log("Response----", response.data);
       console.log("Data type:", typeof response.data);
@@ -153,7 +152,7 @@ const Adashboard: React.FC = () => {
           <ChartTwo />
           <ChartThree />
           {/* Adjusted ChartFour component */}
-          <div className="col-span-12 md:col-span-6 w-150 h-50 xl:col-span-2 2xl:col-span-3">
+          <div className="col-span-12 md:col-span-6 w-150 h-70 xl:col-span-2 2xl:col-span-3">
             <ChartFour />
           </div>
 

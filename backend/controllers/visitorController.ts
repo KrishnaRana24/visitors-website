@@ -137,6 +137,9 @@ function formatDateToUnixTimestamp(unixTimestamp: number): number {
 
 export const getVisitorData = async (req: Request, res: Response) => {
   try {
+    // const { timeframe } = req.query;
+    // console.log(timeframe);
+
     const data = await Visitor.find();
     if (!data || data.length === 0) {
       res.status(404).json({ message: "No visitor data found!" });

@@ -20,7 +20,7 @@ const Settings = () => {
     const fetchAdminData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8001/adminRouter/getdata"
+          "http://localhost:8000/adminRouter/getdata"
         );
 
         if (Array.isArray(response.data.data)) {

@@ -17,7 +17,7 @@ const Profile = () => {
 
         // Make a POST request to the uploadPhoto endpoint
         const response = await axios.post(
-          "http://localhost:8001/adminRouter/uploadImage",
+          "http://localhost:8000/adminRouter/uploadImage",
           formData
         );
 

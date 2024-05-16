@@ -65,14 +65,14 @@ export const generateOtp = async (req: Request, res: Response) => {
       specialChars: false,
     });
 
+    const otpData = new OTP({ otp, visitor });
+    await otpData.save();
+    console.log("otpData----", otpData);
+
     const data_name = visitor.name;
     const data_phone = visitor.phone;
     console.log(data_name);
     console.log(data_phone);
-
-    if (!data_name || !data_phone) {
-      return res.json({ message: "there is no data " });
-    }
 
     const message = `
       <p style="font-size: 16px; color: #333; line-height: 1.5;">
@@ -85,9 +85,6 @@ export const generateOtp = async (req: Request, res: Response) => {
         ${data_name} is waiting to meet you for some talk. You can communicate with them via email at ${visitor.email} or by phone at ${data_phone}.
       </p>
     `;
-    const otpData = new OTP({ otp, visitor });
-    await otpData.save();
-    console.log("otpData----", otpData);
 
     const sendmail = await sendMail({
       email: visitor?.email,

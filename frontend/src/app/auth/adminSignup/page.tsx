@@ -50,6 +50,8 @@ const AdminSignup: React.FC = () => {
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    console.log("file--", file);
+
     if (file) {
       try {
         const formData = new FormData();
@@ -57,7 +59,7 @@ const AdminSignup: React.FC = () => {
 
         // Make a POST request to the uploadPhoto endpoint
         const response = await axios.post(
-          "http://localhost:8001/adminRouter/uploadImage",
+          "http://localhost:8000/adminRouter/uploadImage",
           formData
         );
 

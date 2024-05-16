@@ -18,7 +18,7 @@ const ChartOne: React.FC = () => {
       try {
         // Fetch data from MongoDB URL
         const response = await axios.get(
-          `http://localhost:8001/visitorRouter/getVisitorData?year=${selectedYear}`
+          `http://localhost:8000/visitorRouter/getVisitorData?year=${selectedYear}`
         );
 
         const visitingData = response.data;

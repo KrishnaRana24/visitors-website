@@ -19,7 +19,7 @@ mongoose
   .catch((err: any) => console.error("MongoDB connection error:", err));
 
 const app = express();
-const port = process.env.PORT || 8001;
+const port = process.env.PORT;
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");

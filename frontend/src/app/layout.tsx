@@ -5,6 +5,8 @@ import "./globals.css";
 import { Web3Modal } from "@/context/web3modal";
 import { Provider } from "react-redux";
 import { store } from "./../app/store/store";
+import { useEffect, useState } from "react";
+import Loader from "@/components/loader/page";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -21,11 +23,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1000);
+  }, []);
+
   return (
     <html lang="en">
       <body className={inter.className}>
         <Web3Modal>
-          <Provider store={store}>{children}</Provider>
+          <Provider store={store}>{loading ? <Loader /> : children}</Provider>
         </Web3Modal>
       </body>
     </html>

@@ -14,12 +14,11 @@ const UserReview: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setIsLoading(true);
 
     try {
       const response = await axios.post(
-        "http://localhost:8001/review/addReview",
+        "http://localhost:8000/review/addReview",
         {
           name,
           email,
@@ -27,10 +26,7 @@ const UserReview: React.FC = () => {
           comment,
         }
       );
-
       console.log("Response:", response.data);
-
-      // Reset form fields
       setName("");
       setEmail("");
       setRating(0);

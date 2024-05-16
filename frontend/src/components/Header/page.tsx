@@ -1,108 +1,84 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import DropdownUser from "./DropdownUser";
 import { useWeb3Modal } from "@web3modal/ethers/react";
 import { Web3Provider } from "@ethersproject/providers";
+import { FiMenu } from "react-icons/fi";
 
 interface HeaderProps {
+  sidebarOpen: string | boolean | undefined;
   setSidebarOpen: (arg0: boolean) => void;
 }
 
-const Header: React.FC<HeaderProps> = (props) => {
+const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const [connected, setConnected] = useState<boolean>(false);
   const [signedIn, setSignedIn] = useState<boolean>(false);
+  const [account, setAccount] = useState<string | null>(null);
+  const [network, setNetwork] = useState<string | null>(null);
   const router = useRouter();
-  const { open } = useWeb3Modal();
+  const { open: openWeb3Modal } = useWeb3Modal(); // Rename open to openWeb3Modal to avoid conflicts
 
-  useEffect(() => {
-    const checkConnection = async () => {
+  const trigger = useRef<HTMLButtonElement>(null);
+
+  const openModalIfNotConnected = async () => {
+    if (!connected) {
       try {
-        const provider = await open();
-        if (provider !== undefined) {
-          // Proceed with the logic if the provider is not undefined
+        const provider = (await openWeb3Modal()) as unknown as Web3Provider;
+        if (provider) {
+          const signer = provider.getSigner();
+          const account = await signer.getAddress();
+          const network = await provider.getNetwork();
           setConnected(true);
+          setAccount(account);
+          setNetwork(network.name);
+          setSignedIn(true);
+          router.push("/dashboard");
         }
       } catch (error) {
-        console.error("Error checking connection:", error);
+        console.error("Error connecting:", error);
       }
-    };
-
-    checkConnection();
-  }, []);
-
-  const connectMetaMask = async () => {
-    try {
-      const providerInstance: Web3Provider | void = await open();
-      if (providerInstance !== undefined) {
-        setConnected(true);
-        setSignedIn(true);
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      console.error("Error connecting:", error);
     }
-  };
-
-  const handleSignIn = () => {
-    setSignedIn(true);
   };
 
   const handleConnect = () => {
-    if (!signedIn) {
-      handleSignIn();
-    } else {
-      connectMetaMask();
-    }
+    openModalIfNotConnected();
   };
 
   return (
     <nav className="bg-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center"></div>
+          <button
+            ref={trigger}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-controls="sidebar"
+            aria-expanded={!!sidebarOpen}
+            className="block bg-red-900"
+          >
+            <FiMenu className="w-6 h-6" />
+          </button>
+
+          <div className="flex items-center">
+            {connected && account && network && (
+              <div className="text-white">
+                <p>Account: {account}</p>
+                <p>Network: {network}</p>
+              </div>
+            )}
+          </div>
 
           <div className="hidden lg:flex gap-3 items-center">
-            {connected && (
-              <>
-                <div>
-                  <button
-                    className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
-                    onClick={handleConnect}
-                  >
-                    <w3m-button />
-                  </button>
-                  <button
-                    className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
-                    onClick={handleConnect}
-                  >
-                    <w3m-network-button />
-                  </button>
-                </div>
-                <DropdownUser />
-              </>
-            )}
-
-            {!connected && (
-              <>
-                <div>
-                  <button
-                    className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
-                    onClick={handleConnect}
-                  >
-                    <w3m-button />
-                  </button>
-                  <button
-                    className="bg-blue-950 text-white rounded-full  hover:bg-blue-500 transition duration-300"
-                    onClick={handleConnect}
-                  >
-                    <w3m-network-button />
-                  </button>
-                </div>
-
-                <DropdownUser />
-              </>
-            )}
+            <div>
+              <button
+                className="bg-blue-950 text-white rounded-full hover:bg-blue-500 transition duration-300"
+                onClick={handleConnect}
+              >
+                <w3m-account-button />
+              </button>
+              {/* Add other buttons as needed */}
+            </div>
+            <DropdownUser />
           </div>
         </div>
       </div>

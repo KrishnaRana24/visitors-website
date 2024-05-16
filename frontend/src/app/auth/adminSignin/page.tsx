@@ -22,6 +22,8 @@ const AdminSignin: React.FC = () => {
   });
   const { error } = useSelector((state: RootState) => state.auth);
   const [isAdminSignedIn, setIsAdminSignedIn] = useState(false);
+  const [metamaskConnected, setMetamaskConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -35,12 +37,25 @@ const AdminSignin: React.FC = () => {
     try {
       const token = await dispatch(adminLogin(formData));
       console.log("Token--", token);
-      setIsAdminSignedIn(true);
-      {
-        isAdminSignedIn && router.push("/dashboard");
-      }
     } catch (error) {
       console.log("Error signing in: ", error);
+    }
+  };
+
+  const handleMetamaskConnect = async () => {
+    try {
+      if (window.ethereum) {
+        await (window as any).ethereum?.request({
+          method: "eth_requestAccounts",
+        });
+
+        setMetamaskConnected(true);
+        router.push("/dashboard");
+      } else {
+        alert("Metamask not detected. Please install Metamask to continue.");
+      }
+    } catch (error) {
+      console.error("Error connecting to Metamask:", error);
     }
   };
 
@@ -198,7 +213,6 @@ const AdminSignin: React.FC = () => {
 
         <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
           <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
-            <span className="mb-1.5 block font-medium">Start for free</span>
             <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
               Sign In to VisitorVault
             </h2>
@@ -277,17 +291,41 @@ const AdminSignin: React.FC = () => {
               </div>
 
               <div className="mb-5">
+                {/* <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`bg-primary text-white py-2 px-4 rounded-md ${
+                    isLoading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-opacity-90 focus:outline-none focus:bg-primary"
+                  }`}
+                >
+                  {isLoading ? "Submitting..." : "Submit Review"}
+                </button> */}
                 <button
                   type="submit"
-                  className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                  disabled={isLoading}
+                  className={`bg-primary text-white py-2 px-4 rounded-lg w-full ${
+                    isLoading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-opacity-90 focus:outline-none focus:bg-primary"
+                  }`}
                 >
-                  Sign In
+                  {isLoading ? "Sign In" : "Submit"}
+                  {/* Sign In */}
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleMetamaskConnect}
+                  className="w-full mt-2 cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition duration-300 hover:bg-opacity-90"
+                >
+                  Connect with Metamask
                 </button>
               </div>
 
               <div className="mt-6 text-center">
                 <p>
-                  Don’t have any account?
+                  Don't have any account?
                   <Link href="/auth/adminSignup" className="text-primary">
                     Sign Up
                   </Link>

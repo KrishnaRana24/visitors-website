@@ -6,10 +6,12 @@ interface Admin {
   email: string;
   password: string;
 }
+
 interface AuthState {
   token: string | null;
   error: string | null;
   admin: Admin | null;
+  loading: boolean;
 }
 
 const initialState: AuthState = {
@@ -19,38 +21,39 @@ const initialState: AuthState = {
       : null,
   error: null,
   admin: null,
+  loading: false,
 };
 
 export const adminLogin = createAsyncThunk(
   "auth/adminLogin",
-  async (formData: any, { dispatch }) => {
-    console.log(formData);
-
+  async (formData: any, { dispatch, rejectWithValue }) => {
     try {
-      const response = await axios.post<{ admin: Admin; token: string }>(
-        "http://localhost:8001/adminRouter/adminlogin",
+      dispatch(setLoading(true));
+      const response = await axios.post<{ adminInfo: Admin; token: string }>(
+        "http://localhost:8000/adminRouter/adminlogin",
         formData
       );
-      console.log("responce data--", response);
 
-      const { admin, token } = response.data;
-      console.log(admin, token);
+      const { adminInfo, token } = response.data;
 
-      //
-      dispatch(setAdmin(admin));
+      dispatch(setAdmin(adminInfo));
       dispatch(setToken(token));
-      // Store token in localStorage and cookies
 
-      // // Store token in localStorage and cookies
       if (typeof window !== "undefined") {
         localStorage.setItem("token", token);
         Cookies.set("token", token);
       }
 
       return token;
-    } catch (error) {
-      dispatch(setError("Error signing in: " + error));
-      throw error;
+    } catch (error: any) {
+      dispatch(setError("Error signing in: " + error.message));
+
+      if (error.response && error.response.data) {
+        return rejectWithValue(error.response.data.message);
+      }
+      return rejectWithValue("An unknown error occurred");
+    } finally {
+      dispatch(setLoading(false));
     }
   }
 );
@@ -61,8 +64,10 @@ const authSlice = createSlice({
   reducers: {
     setToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
-      localStorage.setItem("token", action.payload);
-      Cookies.set("token", action.payload); // Set token in cookies
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", action.payload);
+        Cookies.set("token", action.payload);
+      }
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${action.payload}`;
     },
@@ -72,18 +77,24 @@ const authSlice = createSlice({
     setAdmin: (state, action: PayloadAction<Admin>) => {
       state.admin = action.payload;
     },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(adminLogin.fulfilled, (state, action) => {
-      // Access the token from action.payload after it has been set
       const token = action.payload || "";
-      localStorage.setItem("token", token); // Set token in localStorage
-      Cookies.set("token", token); // Set token in cookies
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`; // Set token in axios headers
+      localStorage.setItem("token", token);
+      Cookies.set("token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    });
+    builder.addCase(adminLogin.rejected, (state, action) => {
+      state.error = action.payload as string;
+      state.loading = false;
     });
   },
 });
 
-export const { setToken, setError, setAdmin } = authSlice.actions;
+export const { setToken, setError, setAdmin, setLoading } = authSlice.actions;
 
 export default authSlice.reducer;

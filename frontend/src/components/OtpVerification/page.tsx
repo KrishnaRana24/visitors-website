@@ -38,7 +38,7 @@ const OTPVerification = ({ email }: { email: string }) => {
         // All OTP digits entered, trigger verification
         const enteredOTP = newOTP.join("");
         const response = await axios.post(
-          "http://localhost:8001/otpRouter/verifyOtp",
+          "http://localhost:8000/otpRouter/verifyOtp",
           {
             email: email,
             otp: enteredOTP,
