@@ -1,8 +1,5 @@
 {
-  "/heroSection/page": "app/heroSection/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/checkoutQr/page": "app/checkoutQr/page.js",
-  "/userSignup/page": "app/userSignup/page.js",
+  "/not-found": "app/not-found.js",
   "/settings/page": "app/settings/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }

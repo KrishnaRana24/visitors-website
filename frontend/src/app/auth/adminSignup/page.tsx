@@ -60,7 +60,12 @@ const AdminSignup: React.FC = () => {
         // Make a POST request to the uploadPhoto endpoint
         const response = await axios.post(
           "http://localhost:8000/adminRouter/uploadImage",
-          formData
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
 
         // Handle the response as needed

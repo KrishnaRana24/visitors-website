@@ -45,8 +45,8 @@ const ethersConfig = defaultConfig({
   enableEIP6963: true, // true by default
   enableInjected: true, // true by default
   enableCoinbase: true, // true by default
-  rpcUrl: "...", // used for the Coinbase SDK
-  defaultChainId: 1, // used for the Coinbase SDK
+  rpcUrl: "http://127.0.0.1:7545", // used for the Coinbase SDK
+  defaultChainId: 1337, // used for the Coinbase SDK
 });
 
 // 5. Create a Web3Modal instance

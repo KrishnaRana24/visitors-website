@@ -31,7 +31,7 @@ const options: ApexOptions = {
         plotOptions: {
           bar: {
             borderRadius: 0,
-            columnWidth: "25%",
+            columnWidth: "60%",
           },
         },
       },
@@ -44,6 +44,13 @@ const options: ApexOptions = {
       columnWidth: "25%",
       borderRadiusApplication: "end",
       borderRadiusWhenStacked: "last",
+      dataLabels: {
+        position: "top",
+      },
+      // Add padding between bars
+      distributed: true,
+      barHeight: "80%",
+      // barWidth: "70%",
     },
   },
   dataLabels: {
@@ -51,11 +58,32 @@ const options: ApexOptions = {
   },
   xaxis: {
     categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    axisBorder: {
+      show: false,
+    },
+    labels: {
+      style: {
+        fontSize: "14px",
+      },
+    },
+    axisTicks: {
+      show: false,
+    },
   },
   yaxis: {
+    title: {
+      style: {
+        fontSize: "0px",
+      },
+    },
+    labels: {
+      style: {
+        fontSize: "14px",
+      },
+    },
     min: 0,
     max: 20,
-    tickAmount: 10, // Control the number of ticks
+    // tickAmount: 10, // Control the number of ticks
   },
   legend: {
     position: "top",
@@ -87,12 +115,12 @@ const ChartTwo: React.FC = () => {
         const visitingData = response.data;
 
         // Initialize array to store daily data
-        const dailyData = Array.from({ length: 7 }, () => 0);
+        const dailyData = Array.from({ length: 8 }, () => 0);
 
         // Iterate through the data and count visits for each day of the week
         visitingData.data.forEach((data: any) => {
           const date = new Date(data.date);
-          const dayOfWeek = date.getDay();
+          const dayOfWeek = date.getDay() - 1;
           dailyData[dayOfWeek]++;
         });
 
@@ -114,9 +142,9 @@ const ChartTwo: React.FC = () => {
   //   };
 
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
-      <div className="mb-4 justify-between gap-4 sm:flex">
-        <div>
+    <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-8">
+      <div className="mb-3">
+        <div className="p-7.5">
           <h4 className="text-xl font-semibold text-black dark:text-white">
             Visitor of this week
           </h4>
@@ -126,6 +154,7 @@ const ChartTwo: React.FC = () => {
             series={[{ name: "Visitors", data: seriesData }]}
             type="bar"
             height={350}
+            width="100%"
           />
         </div>
       </div>

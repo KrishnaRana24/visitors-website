@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactApexChart from "react-apexcharts";
 import axios from "axios";
 import { ApexOptions } from "apexcharts";
@@ -13,9 +13,18 @@ const ChartOne: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
 
+  const selectedYearRef = useRef(selectedYear);
+
+  useEffect(() => {
+    // Update the ref whenever selectedYear changes
+    selectedYearRef.current = selectedYear;
+  }, [selectedYear]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        setError(null);
         // Fetch data from MongoDB URL
         const response = await axios.get(
           `http://localhost:8000/visitorRouter/getVisitorData?year=${selectedYear}`
@@ -41,9 +50,10 @@ const ChartOne: React.FC = () => {
         setLoading(false);
       }
     };
-    if (selectedYear !== null) {
-      fetchData();
-    }
+    fetchData();
+    // if (selectedYear !== null) {
+    //   fetchData();
+    // }
   }, [selectedYear]);
 
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {

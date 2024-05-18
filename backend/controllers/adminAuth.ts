@@ -114,6 +114,7 @@ export const adminSign = async (req: Request, res: Response) => {
     // if (password !== rpassword) {
     //   return res.status(400).json({ message: "Passwords do not match" });
     // }
+
     const trimmedPassword = password.trim();
     const trimmedRPassword = rpassword.trim();
 

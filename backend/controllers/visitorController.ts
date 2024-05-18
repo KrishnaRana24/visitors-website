@@ -58,7 +58,7 @@ async function triggerGanacheTransaction(visitorData: any) {
 
     const contractInstance = new web3.eth.Contract(
       contractJson.abi,
-      "0x23F6c77273528b88A2595BfBb3DE5A1b35cB435c" // Contract address
+      "0xf0F3662D8018FF08A818802c0Ff2a71a5753E7d7" // Contract address
     );
     // console.log("--contractInstance--", contractInstance);
 
@@ -159,7 +159,7 @@ async function getVisitorDataFromGanache(): Promise<Visitor[]> {
     const contractJson = require("/home/dev/blockchain/visitor-web/frontend/public/contracts/VisitorAuth.json");
     const contractInstance = new web3Instance.eth.Contract(
       contractJson.abi,
-      "0x23F6c77273528b88A2595BfBb3DE5A1b35cB435c" // Contract address
+      "0xa9EE2E59C8e035B7e44f3B7a8e6Efd49C206DEa3" // Contract address
     );
 
     // Call the smart contract method to get visitor data
@@ -179,53 +179,18 @@ async function getVisitorDataFromGanache(): Promise<Visitor[]> {
 export const filterData = async (req: Request, res: Response) => {
   try {
     const { name, types, toMeet } = req.body;
-    const visitorData = await getVisitorDataFromGanache();
-    // console.log(visitorData);
 
-    const visitorDataWithoutBigInt = visitorData.map((visitor: any) => {
-      const visitorWithoutBigInt: any = {};
-      for (const [key, value] of Object.entries(visitor)) {
-        visitorWithoutBigInt[key] =
-          typeof value === "bigint" ? value.toString() : value;
-      }
-      return visitorWithoutBigInt;
-    });
+    // Construct the filter object based on the provided query parameters
+    const filter: any = {};
+    if (name) filter.name = { $regex: new RegExp(name, "i") };
+    if (types) filter.types = { $regex: new RegExp(types, "i") };
+    if (toMeet) filter.toMeet = { $regex: new RegExp(toMeet, "i") };
 
-    console.log("Visitor data without BigInt:", visitorDataWithoutBigInt);
-    const filteredData = visitorDataWithoutBigInt.filter((visitor: any) => {
-      try {
-        if (!visitor) {
-          return false;
-        }
+    // Perform the query to filter data from the database
+    const filteredData = await Visitor.find(filter);
+    console.log("FilterData---", filterData);
 
-        let filterName = true;
-        let filterTypes = true;
-        let filterToMeet = true;
-
-        if (name) {
-          const visitorName = visitor.name.toLowerCase();
-          filterName = visitorName.includes(name.toLowerCase());
-        }
-
-        if (types) {
-          const visitorTypes = visitor.types.toLowerCase();
-          filterTypes = visitorTypes.includes(types.toLowerCase());
-        }
-
-        if (toMeet) {
-          const visitorToMeet = visitor.toMeet.toLowerCase();
-          filterToMeet = visitorToMeet.includes(toMeet.toLowerCase());
-        }
-
-        return filterName && filterTypes && filterToMeet;
-      } catch (error) {
-        console.error("Error filtering visitor:", error);
-        return false;
-      }
-    });
-    const stringifiedData = JSON.parse(JSON.stringify(filteredData));
-
-    res.status(200).json({ filteredData: stringifiedData });
+    res.status(200).json({ filteredData });
   } catch (error) {
     console.error("Error filtering visitor data:", error);
     res.status(500).json({ error: "Internal server error" });

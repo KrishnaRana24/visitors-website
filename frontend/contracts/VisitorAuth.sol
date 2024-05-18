@@ -56,6 +56,10 @@ contract VisitorAuth {
     function getVisitor(
         uint256 _visitorId
     ) public view returns (Visitor memory) {
+        require(
+            _visitorId > 0 && _visitorId <= lastVisitorId,
+            "Invalid visitor ID"
+        );
         return visitors[_visitorId];
     }
 

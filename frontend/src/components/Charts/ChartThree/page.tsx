@@ -14,7 +14,7 @@ const ChartThree: React.FC = () => {
         const provider = new JsonRpcProvider("http://127.0.0.1:7545");
         const contractJson = require("/public/contracts/VisitorAuth.json");
         const contract = new ethers.Contract(
-          "0x23F6c77273528b88A2595BfBb3DE5A1b35cB435c",
+          "0xa9EE2E59C8e035B7e44f3B7a8e6Efd49C206DEa3",
           contractJson.abi,
           provider
         );

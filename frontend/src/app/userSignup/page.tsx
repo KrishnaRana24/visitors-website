@@ -1,5 +1,5 @@
 "use client";
-import Web3, { AbiFragment } from "web3";
+import Web3 from "web3";
 import { Contract } from "web3-eth-contract";
 import { AbiItem } from "web3-utils";
 import React, { useEffect, useState } from "react";
@@ -42,21 +42,18 @@ const VisitorAuth: React.FC = () => {
     const initializeContracts = async () => {
       if (typeof window.ethereum !== "undefined") {
         try {
-          // Request account access if needed
           await window.ethereum.request({ method: "eth_requestAccounts" });
 
-          // MetaMask Web3 instance
           const metaMaskWeb3Instance = new Web3(window.ethereum);
           setMetaMaskWeb3(metaMaskWeb3Instance);
 
-          // Ganache Web3 instance
           const ganacheWeb3Instance = new Web3("http://127.0.0.1:7545");
           setGanacheWeb3(ganacheWeb3Instance);
 
           const contractJson = require("/public/contracts/VisitorAuth.json");
           const ganacheContractInstance = new ganacheWeb3Instance.eth.Contract(
             contractJson.abi,
-            "0x23F6c77273528b88A2595BfBb3DE5A1b35cB435c" // Contract address
+            "0xa9EE2E59C8e035B7e44f3B7a8e6Efd49C206DEa3"
           );
           console.log("contractInstance--", ganacheContractInstance);
 
@@ -88,21 +85,20 @@ const VisitorAuth: React.FC = () => {
   const handleButtonClick: React.MouseEventHandler<HTMLButtonElement> = async (
     e
   ) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!contract || !visitingData || !metaMaskWeb3) {
+      console.error("Contract or data is not available.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      e.preventDefault();
-
-      if (!contract || !visitingData || !metaMaskWeb3) {
-        console.error("Contract or data is not available.");
-        return;
-      }
-      console.log("visitingData----", visitingData);
-
       const accounts = await metaMaskWeb3.eth.getAccounts();
       const account = accounts[0];
-      console.log("Connected account:", account);
-
       const unixTimestamp = moment(visitingData.date, "YYYY-MM-DD").valueOf();
-      console.log(unixTimestamp);
+      console.log("date--", unixTimestamp);
 
       const response = await axios.post(
         "http://localhost:8000/visitorRouter/visitorSignup",
@@ -112,10 +108,7 @@ const VisitorAuth: React.FC = () => {
         }
       );
 
-      console.log("Server response:", response.data);
-
       const visitorId = response.data.visitorId;
-      console.log(visitorId);
 
       const gas = await contract.methods
         .registerVisitor(
@@ -134,8 +127,6 @@ const VisitorAuth: React.FC = () => {
           from: account,
           value: metaMaskWeb3.utils.toWei("0.1", "ether"),
         });
-
-      console.log("Gas estimate:", gas);
 
       const tx = await contract.methods
         .registerVisitor(
@@ -157,32 +148,27 @@ const VisitorAuth: React.FC = () => {
         });
 
       console.log("Transaction hash:", tx.transactionHash);
-      console.log("Data stored successfully on the blockchain.");
 
-      try {
-        const otpResponse = await axios.post(
-          "http://localhost:8000/otpRouter/generateOtp",
-          {
-            visitorId,
-            email: visitingData.email,
-            meetPersonemail: visitingData.meetPersonemail,
-          }
-        );
+      const otpResponse = await axios.post(
+        "http://localhost:8000/otpRouter/generateOtp",
+        {
+          visitorId,
+          email: visitingData.email,
+          meetPersonemail: visitingData.meetPersonemail,
+        }
+      );
 
-        console.log("OTP generated and sent successfully:", otpResponse.data);
-        setLoading(false);
-        router.push("/otpPage");
-      } catch (error) {
-        console.log("Error while generating OTP:", error);
-        setLoading(false);
-      }
+      console.log("OTP generated and sent successfully:", otpResponse.data);
+      setLoading(false);
+      router.push("/otpPage");
     } catch (error) {
       console.error("Error storing data:", error);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen  text-black m-10 flex justify-center items-center flex-col w-600">
+    <div className="min-h-screen text-black m-10 flex justify-center items-center flex-col w-600">
       <h2 className="text-3xl font-bold mb-8">Visitor Information Form</h2>
       <div className="max-w-md w-full bg-purple-200 p-10 rounded shadow-md grid grid-cols-2 gap-8">
         {loading ? (
@@ -255,7 +241,7 @@ const VisitorAuth: React.FC = () => {
                   <PhoneInput
                     id="phone"
                     name="phone"
-                    country={"IN" as CountryCode} // Set default country to India
+                    country={"IN" as CountryCode}
                     value={visitingData.phone as E164Number}
                     onChange={(value) => {
                       if (value) {
@@ -326,7 +312,6 @@ const VisitorAuth: React.FC = () => {
                     <option value="vender">Vender Visitor</option>
                     <option value="job_applicant">Job applicant visitor</option>
                     <option value="regulatory">Regulatory visitors</option>
-                    {/* Add more options as needed */}
                   </select>
                 </div>
                 <div>
@@ -371,7 +356,7 @@ const VisitorAuth: React.FC = () => {
                     Date of Visit
                   </label>
                   <input
-                    type="Date"
+                    type="date"
                     id="date"
                     name="date"
                     value={visitingData.date}
@@ -385,6 +370,7 @@ const VisitorAuth: React.FC = () => {
                     onClick={handleButtonClick}
                     type="button"
                     className="w-full bg-purple-700 text-white py-3 px-6 rounded hover:bg-purple-950 transition duration-200"
+                    disabled={loading}
                   >
                     Submit
                   </button>

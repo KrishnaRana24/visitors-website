@@ -151,10 +151,6 @@ const Adashboard: React.FC = () => {
           <ChartOne />
           <ChartTwo />
           <ChartThree />
-          {/* Adjusted ChartFour component */}
-          <div className="col-span-12 md:col-span-6 w-150 h-70 xl:col-span-2 2xl:col-span-3">
-            <ChartFour />
-          </div>
 
           <div className="col-span-12 xl:col-span-12">
             <TableOne />

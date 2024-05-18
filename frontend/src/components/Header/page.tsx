@@ -74,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
                 className="bg-blue-950 text-white rounded-full hover:bg-blue-500 transition duration-300"
                 onClick={handleConnect}
               >
-                <w3m-account-button />
+                <w3m-button />
               </button>
               {/* Add other buttons as needed */}
             </div>

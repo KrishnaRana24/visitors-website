@@ -37,7 +37,7 @@ const TableOne = () => {
         const contractJson = require("/public/contracts/VisitorAuth.json");
 
         const contract = new ethers.Contract(
-          "0x23F6c77273528b88A2595BfBb3DE5A1b35cB435c",
+          "0xa9EE2E59C8e035B7e44f3B7a8e6Efd49C206DEa3",
           contractJson.abi,
           provider
         );
@@ -48,6 +48,7 @@ const TableOne = () => {
           typeof allVisitors[0].date,
           Number(allVisitors[0].date)
         );
+        // console.log("visitorDate-",visitorData.date);
 
         const formattedVisitorData = allVisitors.map((visitors: any) => ({
           name: visitors.name,
@@ -58,8 +59,11 @@ const TableOne = () => {
           types: visitors.types,
           toMeet: visitors.toMeet,
           meetPersonEmail: visitors.meetPersonemail,
-          date: moment(Number(visitors.date) * 1000).format("DD/MM/YYYY"),
+          // date: moment.unix(Number(visitors.date)).format("YYYY/MM/DD"),
+          date: moment(Number(visitors.date)).format("DD/MM/YYYY"),
         }));
+
+        console.log("formattedDate--", formattedVisitorData);
 
         setVisitorData(formattedVisitorData);
         setFilteredData(formattedVisitorData); // Initially set filteredData to all visitor data
@@ -71,10 +75,6 @@ const TableOne = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchName, searchTypes, searchToMeet]);
-
   const fetchData = async () => {
     try {
       setLoading(true); // Set loading to true when fetching data
@@ -84,6 +84,7 @@ const TableOne = () => {
 
       const { visitors } = response.data;
       setVisitorData(visitors);
+      // setFilteredData(visitors);
       setLoading(false); // Set loading to false after fetching data
     } catch (error) {
       console.error("Error fetching visitor data:", error);
@@ -91,29 +92,43 @@ const TableOne = () => {
     }
   };
 
-  // Function to handle search by name
-  const handleSearchNameChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleSearchNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value: string = e.target.value;
     setSearchName(value);
     filterData(value, searchTypes, searchToMeet);
   };
 
-  // Function to handle search by types
-  const handleSearchTypesChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleSearchTypesChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value: string = e.target.value;
     setSearchTypes(value);
     filterData(searchName, value, searchToMeet);
   };
 
-  // Function to handle search by toMeet
-  const handleSearchToMeetChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleSearchToMeetChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value: string = e.target.value;
     setSearchToMeet(value);
     filterData(searchName, searchTypes, value);
   };
 
+  const handleClearFilters = () => {
+    setSearchName("");
+    setSearchTypes("");
+    setSearchToMeet("");
+    filterData("", "", ""); // Call filterData with empty parameters to clear filters
+  };
+
   const filterData = async (name: string, types: string, toMeet: string) => {
     try {
+      setLoading(true);
+
+      const allEmpty = name === "" && types === "" && toMeet === "";
+
+      if (allEmpty) {
+        setFilteredData(visitorData);
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.post(
         "http://localhost:8000/visitorRouter/filterdata",
         {
@@ -123,37 +138,20 @@ const TableOne = () => {
         }
       );
 
-      // Extract filtered data from the response
-      let filteredData: Visitor[] = [];
+      const { filteredData } = response.data;
 
-      if (Array.isArray(response.data)) {
-        filteredData = response.data;
-      } else if (
-        response.data.filteredData &&
-        Array.isArray(response.data.filteredData)
-      ) {
-        filteredData = response.data.filteredData;
-      } else {
-        // Convert the response data to an array if it's not already an array
-        const dataArray: Visitor[] = Object.values(response.data) as Visitor[];
-        if (Array.isArray(dataArray)) {
-          filteredData = dataArray;
-        } else {
-          console.log(
-            "Unable to convert API response to array:",
-            response.data
-          );
-        }
-      }
-      // Set the filtered data
+      // Update filtered data
       setFilteredData(filteredData);
+      setLoading(false);
     } catch (error) {
       console.error("Error filtering visitor data:", error);
-    } finally {
-      // Ensure loading state is always updated
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, searchName, searchTypes, searchToMeet]);
 
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected);
@@ -172,8 +170,6 @@ const TableOne = () => {
         <head>
           <title>Visitor Details</title>
           <style>
-            /* Add any custom styles for printing here */
-            /* Example: */
             table {
               border-collapse: collapse;
               width: 100%;
@@ -272,7 +268,9 @@ const TableOne = () => {
           value={searchToMeet}
           onChange={handleSearchToMeetChange}
           className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-gray-500"
-        />{" "}
+        />
+        <button onClick={handleClearFilters}>Clear Filters</button>{" "}
+        {/* Add Clear Filters button */}
       </div>
       <div className="overflow-x-auto ">
         <table className="w-full bg-gray-200 border border-gray-200">

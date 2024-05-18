@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 
 const OTPVerification = ({ email }: { email: string }) => {
   const [otp, setOTP] = useState(["", "", "", "", "", ""]);
+  const [errorMessage, setErrorMessage] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
+
   useEffect(() => {
     inputRefs.current[0]?.focus(); // Focus on the first input box when component mounts
   }, []);
@@ -48,6 +50,9 @@ const OTPVerification = ({ email }: { email: string }) => {
         // Handle response here, display appropriate messages to the user
 
         router.push("/userWelcome");
+      } else {
+        // Handle failure response
+        setErrorMessage("Wrong OTP, please enter the correct one.");
       }
     } catch (error) {
       console.log(error);
@@ -61,6 +66,9 @@ const OTPVerification = ({ email }: { email: string }) => {
           Please check your email for otp
         </h2>
         <h1 className="text-black font-semibold mb-4">Enter OTP</h1>
+        {errorMessage && (
+          <div className="text-red-500 mb-4">{errorMessage}</div>
+        )}
         <div className="flex">
           {otp.map((digit, index) => (
             <input

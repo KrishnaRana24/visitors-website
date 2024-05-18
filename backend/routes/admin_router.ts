@@ -19,16 +19,13 @@ const imageStorage = multer.diskStorage({
   destination: function (req: Request, file: any, cb: any) {
     console.log("file name", file);
 
-    const uploadDir = path.join(__dirname, "public", "images");
+    const uploadDir = path.join(__dirname, "../../frontend/public/images");
     // console.log("upload dir---", uploadDir);
 
-    cb(null, "/home/dev/blockchain/visitor-web/frontend/public/images/");
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(
-      null,
-      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
-    );
+    cb(null, `${Date.now()}-${file.originalname}`);
     // file.fieldname is name of the field (image)
     // path.extname get the uploaded file extension
   },
@@ -47,24 +44,32 @@ const imageUpload = multer({
     cb(null, true);
   },
 });
-router.post("/uploadImage", imageUpload.single("photo"));
+
+router.post(
+  "/uploadImage",
+  imageUpload.single("photo"),
+  (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        throw new Error("File not uploaded");
+      }
+      res.status(200).json({
+        path: `/home/dev/blockchain/visitor-web/frontend/public/images/${req.file.filename}`,
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ message: "Internal Server Error", error });
+    }
+  }
+);
+
+// router.post("/uploadImage", imageUpload.single("photo"));
 router.post("/adminauth", imageUpload.single("photo"), adminSign);
 router.post("/adminlogin", adminLogin);
 router.get("/protectedroute", verifyToken);
 router.get("/getdata", getAdmin);
 router.put("/updateAdmin/:id", adminUpdate);
 router.delete("/:id", deleteAdmin);
-
-router.post(
-  "/uploadImage",
-  imageUpload.single("photo"),
-  (req: Request, res: Response) => {
-    res.send(req.file);
-  },
-  (req: Request, res: Response, next: any) => {
-    res.status(400).send({ error: "error" });
-  }
-);
 
 // router.use(adminAuth.protech);
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
@@ -21,9 +21,15 @@ const AdminSignin: React.FC = () => {
     password: "",
   });
   const { error } = useSelector((state: RootState) => state.auth);
-  const [isAdminSignedIn, setIsAdminSignedIn] = useState(false);
-  const [metamaskConnected, setMetamaskConnected] = useState(false);
+  const [metamaskInstalled, setMetamaskInstalled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window.ethereum !== "undefined") {
+      setMetamaskInstalled(true);
+    }
+  }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,25 +43,29 @@ const AdminSignin: React.FC = () => {
     try {
       const token = await dispatch(adminLogin(formData));
       console.log("Token--", token);
+      setSignedIn(true);
+      setIsLoading(false);
     } catch (error) {
       console.log("Error signing in: ", error);
+      setIsLoading(false);
     }
   };
 
   const handleMetamaskConnect = async () => {
     try {
       if (window.ethereum) {
-        await (window as any).ethereum?.request({
+        setIsLoading(true);
+        await window.ethereum.request({
           method: "eth_requestAccounts",
         });
-
-        setMetamaskConnected(true);
+        setIsLoading(false);
         router.push("/dashboard");
       } else {
         alert("Metamask not detected. Please install Metamask to continue.");
       }
     } catch (error) {
       console.error("Error connecting to Metamask:", error);
+      setIsLoading(false);
     }
   };
 
@@ -216,7 +226,14 @@ const AdminSignin: React.FC = () => {
             <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
               Sign In to VisitorVault
             </h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && !signedIn && <p style={{ color: "red" }}>{error}</p>}
+            {signedIn &&
+              !error && ( // Conditional rendering for success message
+                <p className="text-green-500 mb-4">
+                  Successfully signed in. Please connect Metamask button to
+                  connect with wallet.
+                </p>
+              )}
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label className="mb-2.5 block font-medium text-black dark:text-white">
@@ -291,35 +308,13 @@ const AdminSignin: React.FC = () => {
               </div>
 
               <div className="mb-5">
-                {/* <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`bg-primary text-white py-2 px-4 rounded-md ${
-                    isLoading
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-opacity-90 focus:outline-none focus:bg-primary"
-                  }`}
-                >
-                  {isLoading ? "Submitting..." : "Submit Review"}
-                </button> */}
                 <button
                   type="submit"
+                  className="w-full rounded-lg border border-transparent bg-primary py-4 text-white font-medium transition duration-300 ease-in-out hover:bg-opacity-90 focus:outline-none focus-visible:shadow-outline"
                   disabled={isLoading}
-                  className={`bg-primary text-white py-2 px-4 rounded-lg w-full ${
-                    isLoading
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-opacity-90 focus:outline-none focus:bg-primary"
-                  }`}
                 >
-                  {isLoading ? "Sign In" : "Submit"}
+                  {isLoading ? "Signing in..." : "Sign In"}
                   {/* Sign In */}
-                </button>
-                <button
-                  type="submit"
-                  onClick={handleMetamaskConnect}
-                  className="w-full mt-2 cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition duration-300 hover:bg-opacity-90"
-                >
-                  Connect with Metamask
                 </button>
               </div>
 
@@ -332,6 +327,19 @@ const AdminSignin: React.FC = () => {
                 </p>
               </div>
             </form>
+            {metamaskInstalled ? (
+              <button
+                className="mt-4 w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={handleMetamaskConnect}
+                disabled={!metamaskInstalled || isLoading}
+              >
+                Connect with Metamask
+              </button>
+            ) : (
+              <p className="mt-2 text-sm text-gray-500">
+                Metamask is not installed. Please install Metamask to continue.
+              </p>
+            )}
           </div>
         </div>
       </div>
