@@ -2,6 +2,8 @@ import express, { Router } from "express";
 import {
   filterData,
   getVisitorData,
+  getVisitorDataByYear,
+  getVisitorDataByYearMonth,
   pagination,
   visitorSign,
 } from "../controllers/visitorController";
@@ -10,6 +12,8 @@ const router: Router = express.Router();
 
 router.post("/visitorSignup", visitorSign);
 router.get("/getVisitorData", getVisitorData);
+router.get("/getVisitorDataByYear", getVisitorDataByYear);
+router.get("/getVisitorDataByYearMonth", getVisitorDataByYearMonth);
 router.post("/filterdata", filterData);
 router.get("/pagination", pagination);
 

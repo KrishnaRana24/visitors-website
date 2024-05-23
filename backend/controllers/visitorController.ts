@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 import Visitor from "../models/visitors_model";
 import Web3 from "web3";
 import moment from "moment";
-import { promises } from "dns";
-import web3 from "web3";
 
 interface Visitor {
   name: string;
@@ -17,6 +15,7 @@ interface Visitor {
   date: string;
 }
 
+//visitor signin form
 export const visitorSign = async (req: Request, res: Response) => {
   try {
     const { date, ...rest } = req.body;
@@ -46,6 +45,7 @@ export const visitorSign = async (req: Request, res: Response) => {
   }
 };
 
+//trasaction store on ganache
 async function triggerGanacheTransaction(visitorData: any) {
   try {
     // const web3 = new Web3();
@@ -135,6 +135,7 @@ function formatDateToUnixTimestamp(unixTimestamp: number): number {
   return Math.floor(unixTimestamp / 1000).valueOf(); // Convert milliseconds to seconds
 }
 
+//get visitor data
 export const getVisitorData = async (req: Request, res: Response) => {
   try {
     // const { timeframe } = req.query;
@@ -148,6 +149,73 @@ export const getVisitorData = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching visitor data:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+//get data by year
+export const getVisitorDataByYear = async (req: Request, res: Response) => {
+  try {
+    const { year } = req.query;
+
+    if (!year) {
+      return res.status(400).json({ message: "Year parameter is required" });
+    }
+
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year}-12-31`);
+
+    const data = await Visitor.find({
+      date: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    });
+
+    if (!data || data.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No visitor data found for the selected year!" });
+    }
+
+    res.status(200).json({ data });
+  } catch (error) {
+    console.error("Error fetching visitor data:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getVisitorDataByYearMonth = async (
+  req: Request,
+  res: Response
+) => {
+  const { year, month } = req.query;
+
+  if (!year || !month) {
+    return res.status(400).send("Year and month are required");
+  }
+
+  const yearNumber = parseInt(year as string, 10);
+  const monthNumber = parseInt(month as string, 10);
+
+  if (isNaN(yearNumber) || isNaN(monthNumber)) {
+    return res.status(400).send("Invalid year or month");
+  }
+
+  try {
+    const startDate = new Date(yearNumber, monthNumber - 1, 1);
+    const endDate = new Date(yearNumber, monthNumber, 0);
+
+    const visitors = await Visitor.find({
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    });
+
+    res.json({ data: visitors });
+  } catch (error) {
+    console.error("Error fetching visitor data:", error);
+    res.status(500).send("Error fetching visitor data");
   }
 };
 
@@ -176,6 +244,7 @@ async function getVisitorDataFromGanache(): Promise<Visitor[]> {
   }
 }
 
+//filter data
 export const filterData = async (req: Request, res: Response) => {
   try {
     const { name, types, toMeet } = req.body;
@@ -197,6 +266,7 @@ export const filterData = async (req: Request, res: Response) => {
   }
 };
 
+//pagination
 export const pagination = async (
   req: Request,
   res: Response

@@ -9,6 +9,7 @@ import {
   adminUpdate,
   deleteAdmin,
   verifyToken,
+  logOut,
 } from "../controllers/adminAuth";
 const adminAuth = require("../controllers/adminAuth");
 
@@ -68,8 +69,9 @@ router.post("/adminauth", imageUpload.single("photo"), adminSign);
 router.post("/adminlogin", adminLogin);
 router.get("/protectedroute", verifyToken);
 router.get("/getdata", getAdmin);
-router.put("/updateAdmin/:id", adminUpdate);
-router.delete("/:id", deleteAdmin);
+router.put("/updateAdmin/:id", verifyToken, adminUpdate);
+router.delete("/:id", verifyToken, deleteAdmin);
+router.post("/logout", logOut);
 
 // router.use(adminAuth.protech);
 

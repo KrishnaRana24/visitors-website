@@ -186,12 +186,17 @@ export const deleteAdmin = async (req: Request, res: Response) => {
 };
 
 //LogOut API
-export const logOut = (req: CustomRequest, res: Response) => {
-  res.cookie("jwt", "loggedOut", {
-    expires: new Date(Date.now() + 10 * 1000), // expires after 10 seconds
-    httpOnly: true,
-  });
-  res.status(200).json({
-    status: "success",
-  });
+export const logOut = (req: Request, res: Response) => {
+  try {
+    // Clear the jwt cookie to log out the admin
+    res.clearCookie("jwt");
+
+    res.status(200).json({
+      status: "success",
+      message: "Admin successfully logged out.",
+    });
+  } catch (error) {
+    console.error("Error occurred during logout:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };

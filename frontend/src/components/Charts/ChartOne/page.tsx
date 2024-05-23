@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import ReactApexChart from "react-apexcharts";
 import axios from "axios";
 import { ApexOptions } from "apexcharts";
@@ -11,30 +11,30 @@ const ChartOne: React.FC = () => {
   const [seriesData, setSeriesData] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [dataAvailable, setDataAvailable] = useState<boolean>(true);
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-
-  const selectedYearRef = useRef(selectedYear);
-
-  useEffect(() => {
-    // Update the ref whenever selectedYear changes
-    selectedYearRef.current = selectedYear;
-  }, [selectedYear]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
+        setDataAvailable(true);
+
         // Fetch data from MongoDB URL
         const response = await axios.get(
-          `http://localhost:8000/visitorRouter/getVisitorData?year=${selectedYear}`
+          `http://localhost:8000/visitorRouter/getVisitorDataByYear?year=${selectedYear}`
         );
 
         const visitingData = response.data;
-        // const data = visitingData.data.forEach((vdata: any, index: any) => {
-        //   console.log(vdata, index);
-        // });
         console.log("visitingData--", visitingData);
+
+        if (!visitingData.data || visitingData.data.length === 0) {
+          setDataAvailable(false);
+          setSeriesData([]);
+          return;
+        }
+
         // Check if visitingData is an array
         const monthlyData = Array.from({ length: 12 }, () => 0);
         visitingData.data.forEach((data: any) => {
@@ -43,18 +43,20 @@ const ChartOne: React.FC = () => {
           monthlyData[month]++;
         });
         setSeriesData(monthlyData);
-      } catch (error) {
+      } catch (error: any) {
         console.log("Error fetching data:", error);
-        setError("Error fetching data");
+        if (error.response && error.response.status === 404) {
+          setDataAvailable(false);
+        } else {
+          setError("Error fetching data");
+        }
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
-    // if (selectedYear !== null) {
-    //   fetchData();
-    // }
-  }, [selectedYear]);
+  }, [selectedYear]); // Ensure this runs every time selectedYear changes
 
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const year = parseInt(event.target.value);
@@ -95,7 +97,6 @@ const ChartOne: React.FC = () => {
         left: 0,
         opacity: 0.1,
       },
-
       toolbar: {
         show: false,
       },
@@ -186,7 +187,6 @@ const ChartOne: React.FC = () => {
             onChange={handleYearChange}
             className="rounded border border-gray-300"
           >
-            {/* <option value="">Select Year</option> */}
             {years.map((year) => (
               <option key={year} value={year}>
                 {year}
@@ -199,6 +199,8 @@ const ChartOne: React.FC = () => {
         <p>Loading chart...</p>
       ) : error ? (
         <p>Error: {error}</p>
+      ) : !dataAvailable ? (
+        <p>Data is not available for the selected year</p>
       ) : (
         <ReactApexChart
           options={options}

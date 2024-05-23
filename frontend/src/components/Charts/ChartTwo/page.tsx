@@ -4,13 +4,6 @@ import axios from "axios";
 import { ApexOptions } from "apexcharts";
 import ReactApexChart from "react-apexcharts";
 
-interface ChartOneState {
-  series: {
-    name: string;
-    data: number[];
-  }[];
-}
-
 const options: ApexOptions = {
   colors: ["#3C50E0", "#80CAEE"],
   chart: {
@@ -47,17 +40,15 @@ const options: ApexOptions = {
       dataLabels: {
         position: "top",
       },
-      // Add padding between bars
       distributed: true,
       barHeight: "80%",
-      // barWidth: "70%",
     },
   },
   dataLabels: {
     enabled: false,
   },
   xaxis: {
-    categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    categories: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     axisBorder: {
       show: false,
     },
@@ -83,7 +74,6 @@ const options: ApexOptions = {
     },
     min: 0,
     max: 20,
-    // tickAmount: 10, // Control the number of ticks
   },
   legend: {
     position: "top",
@@ -100,46 +90,77 @@ const options: ApexOptions = {
 };
 
 const ChartTwo: React.FC = () => {
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    new Date().getMonth() + 1
+  );
   const [seriesData, setSeriesData] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [noData, setNoData] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch data from MongoDB URL
-        const response = await axios.get(
-          `http://localhost:8000/visitorRouter/getVisitorData`
-        );
+  const fetchData = async (year: number, month: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      setNoData(false);
 
+      console.log(`Fetching data for year: ${year}, month: ${month}`);
+
+      const response = await axios.get(
+        `http://localhost:8000/visitorRouter/getVisitorDataByYearMonth?year=${year}&month=${month}`
+      );
+
+      console.log("API Response:", response);
+
+      if (response.status === 200) {
         const visitingData = response.data;
 
-        // Initialize array to store daily data
-        const dailyData = Array.from({ length: 8 }, () => 0);
+        if (visitingData.data.length === 0) {
+          setNoData(true);
+        } else {
+          const dailyData = Array.from({ length: 7 }, () => 0);
 
-        // Iterate through the data and count visits for each day of the week
-        visitingData.data.forEach((data: any) => {
-          const date = new Date(data.date);
-          const dayOfWeek = date.getDay() - 1;
-          dailyData[dayOfWeek]++;
-        });
+          visitingData.data.forEach((data: any) => {
+            const date = new Date(data.date);
+            const dayOfWeek = date.getDay();
+            dailyData[dayOfWeek]++;
+          });
 
-        setSeriesData(dailyData);
-      } catch (error) {
-        console.log("Error fetching data:", error);
-        setError("Error fetching data");
-      } finally {
-        setLoading(false);
+          console.log("Processed daily data:", dailyData);
+
+          setSeriesData(dailyData);
+        }
+      } else {
+        console.error("API returned non-200 status code:", response.status);
+        setError(`Error fetching data: ${response.statusText}`);
       }
-    };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error:", error.message);
+        setError(`Error fetching data: ${error.message}`);
+      } else {
+        console.error("Unexpected error:", error);
+        setError("Error fetching data");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-  }, []);
+  useEffect(() => {
+    fetchData(selectedYear, selectedMonth);
+  }, [selectedYear, selectedMonth]);
 
-  //   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  //     const year = parseInt(event.target.value);
-  //     setSelectedYear(year);
-  //   };
+  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedYear(Number(event.target.value));
+  };
+
+  const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMonth(Number(event.target.value));
+  };
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-8">
@@ -148,14 +169,49 @@ const ChartTwo: React.FC = () => {
           <h4 className="text-xl font-semibold text-black dark:text-white">
             Visitor of this week
           </h4>
-          {error && <div>Error: {error}</div>}
-          <ReactApexChart
-            options={options}
-            series={[{ name: "Visitors", data: seriesData }]}
-            type="bar"
-            height={350}
-            width="100%"
-          />
+          <div className="flex gap-4">
+            <select
+              className="mt-4 p-2 border border-stroke rounded-md"
+              value={selectedYear}
+              onChange={handleYearChange}
+            >
+              {[...Array(10)].map((_, i) => {
+                const year = new Date().getFullYear() - i;
+                return (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                );
+              })}
+            </select>
+            <select
+              className="mt-4 p-2 border border-stroke rounded-md"
+              value={selectedMonth}
+              onChange={handleMonthChange}
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                <option key={month} value={month}>
+                  {new Date(0, month - 1).toLocaleString("default", {
+                    month: "long",
+                  })}
+                </option>
+              ))}
+            </select>
+          </div>
+          {error && <div className="text-red-500">Error: {error}</div>}
+          {loading ? (
+            <p>Loading chart...</p>
+          ) : noData ? (
+            <p>No data found for the selected year and month.</p>
+          ) : (
+            <ReactApexChart
+              options={options}
+              series={[{ name: "Visitors", data: seriesData }]}
+              type="bar"
+              height={350}
+              width="100%"
+            />
+          )}
         </div>
       </div>
     </div>
