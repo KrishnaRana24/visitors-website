@@ -94,23 +94,6 @@ const adminSlice = createSlice({
         state.isLoading = false;
         console.error("Error creating admin", action.payload);
       });
-    // .addCase(updateAdminData.pending, (state) => {
-    //   state.isLoading = true;
-    // })
-    // .addCase(updateAdminData.fulfilled, (state, action) => {
-    //   state.isLoading = false;
-    //   const index = state.admins.findIndex(
-    //     (admin) => admin.id === action.payload.id
-    //   );
-    //   if (index !== -1) {
-    //     state.admins[index] = action.payload;
-    //   }
-    //   console.log("Admin updated successfully");
-    // })
-    // .addCase(updateAdminData.rejected, (state) => {
-    //   state.isLoading = false;
-    //   console.error("Error updating admin");
-    // });
   },
 });
 
