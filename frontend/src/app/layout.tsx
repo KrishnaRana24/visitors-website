@@ -33,7 +33,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Web3Modal>
-          <Provider store={store}>{loading ? <Loader /> : children}</Provider>
+          <Provider store={store}>
+            {loading ? <Loader children={undefined} /> : children}
+          </Provider>
         </Web3Modal>
       </body>
     </html>

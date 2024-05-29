@@ -172,8 +172,8 @@ const VisitorAuth: React.FC = () => {
       <h2 className="text-3xl font-bold mb-8">Visitor Information Form</h2>
       <div className="max-w-md w-full bg-purple-200 p-10 rounded shadow-md grid grid-cols-2 gap-8">
         {loading ? (
-          <div className="col-span-2 flex justify-center items-center">
-            <Loader />
+          <div className="flex justify-center items-center">
+            <Loader children={undefined} />
           </div>
         ) : (
           <>
