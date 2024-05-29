@@ -77,7 +77,7 @@ const Adashboard: React.FC = () => {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="card bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg shadow-lg p-6 hover:shadow-2xl transition-transform transform hover:scale-105">
           <div className="flex items-center justify-between">
-            <FaUser className="text-white" size={30} />
+            <FaUser size={30} />
             <div>
               <h3 className="text-lg font-semibold">Total Visitors</h3>
               <p className="text-2xl font-bold">{totalVisitors}</p>
@@ -86,7 +86,7 @@ const Adashboard: React.FC = () => {
         </div>
         <div className="card bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg shadow-lg p-6 hover:shadow-2xl transition-transform transform hover:scale-105">
           <div className="flex items-center justify-between">
-            <FaEthereum className="text-white" size={30} />
+            <FaEthereum size={30} />
             <div>
               <h3 className="text-lg font-semibold">Total Ether Balance</h3>
               <p className="text-2xl font-bold">{etherBalance} ETH</p>
@@ -95,7 +95,7 @@ const Adashboard: React.FC = () => {
         </div>
         <div className="card bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg shadow-lg p-6 hover:shadow-2xl transition-transform transform hover:scale-105">
           <div className="flex items-center justify-between">
-            <FaStar className="text-white" size={30} />
+            <FaStar size={30} />
             <div>
               <h3 className="text-lg font-semibold">Total Reviews</h3>
               <p className="text-2xl font-bold">{totalReviews}</p>

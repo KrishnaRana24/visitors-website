@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { AppDispatch, RootState } from "../../store/store";
 import { adminLogin } from "../../Slice/authSlice";
 import { useSelector } from "react-redux";
+import Loader from "@/components/loader/page";
 
 interface SigninFormData {
   email: string;
@@ -310,11 +311,15 @@ const AdminSignin: React.FC = () => {
               <div className="mb-5">
                 <button
                   type="submit"
-                  className="w-full rounded-lg border border-transparent bg-primary py-4 text-white font-medium transition duration-300 ease-in-out hover:bg-opacity-90 focus:outline-none focus-visible:shadow-outline"
                   disabled={isLoading}
+                  className={`w-full rounded-lg border border-transparent bg-blue-600 py-4 text-white 
+                              ${
+                                isLoading
+                                  ? "cursor-not-allowed opacity-50"
+                                  : "hover:bg-blue-400 focus:outline-none focus:bg-blue-400"
+                              }`}
                 >
                   {isLoading ? "Signing in..." : "Sign In"}
-                  {/* Sign In */}
                 </button>
               </div>
 
@@ -329,7 +334,7 @@ const AdminSignin: React.FC = () => {
             </form>
             {metamaskInstalled ? (
               <button
-                className="mt-4 w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className={`w-full px-4 py-2 font-medium text-white bg-blue-600 rounded-md focus:outline-none ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                 onClick={handleMetamaskConnect}
                 disabled={!metamaskInstalled || isLoading}
               >

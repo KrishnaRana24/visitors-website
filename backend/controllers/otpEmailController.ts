@@ -82,8 +82,8 @@ export const generateOtp = async (req: Request, res: Response) => {
 
     const meetpersonmessage = `
       <p style="font-size: 16px; color: #333; line-height: 1.5;">
-        ${data_name} is waiting to meet you for some talk. You can communicate with them via email at ${visitor.email} or by phone at ${data_phone}.
-      </p>
+      You are invited to meet ${visitor.name}. You can contact them via email at ${visitor.email} or by phone at ${visitor.phone}.
+     </p>
     `;
 
     const sendmail = await sendMail({

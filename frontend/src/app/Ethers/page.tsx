@@ -23,13 +23,13 @@ export default function Ehters() {
   async function getBalance() {
     if (!isConnected) throw Error("User disconnected");
 
-    const ethersProvider = new BrowserProvider(walletProvider);
-    const signer = await ethersProvider.getSigner();
+    // const ethersProvider = new BrowserProvider(walletProvider);
+    // const signer = await ethersProvider.getSigner();
     // The Contract object
-    const USDTContract = new Contract(USDTAddress, USDTAbi, signer);
-    const USDTBalance = await USDTContract.balanceOf(address);
+    // const USDTContract = new Contract(USDTAddress, USDTAbi, signer);
+    // const USDTBalance = await USDTContract.balanceOf(address);
 
-    console.log(formatUnits(USDTBalance, 18));
+    // console.log(formatUnits(USDTBalance, 18));
   }
 
   return (

@@ -25,14 +25,13 @@ const TableOne = () => {
   const [searchTypes, setSearchTypes] = useState("");
   const [searchToMeet, setSearchToMeet] = useState("");
   const [filteredData, setFilteredData] = useState<Visitor[]>([]);
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
 
   const tableRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch visitor data
         const provider = new JsonRpcProvider("http://127.0.0.1:7545");
         const contractJson = require("/public/contracts/VisitorAuth.json");
 
@@ -43,30 +42,21 @@ const TableOne = () => {
         );
 
         const allVisitors = await contract.getAllVisitors();
-        console.log(
-          "date",
-          typeof allVisitors[0].date,
-          Number(allVisitors[0].date)
-        );
-        // console.log("visitorDate-",visitorData.date);
 
-        const formattedVisitorData = allVisitors.map((visitors: any) => ({
-          name: visitors.name,
-          email: visitors.email,
-          address: visitors.add,
-          phone: visitors.phone,
-          purpose: visitors.purpose,
-          types: visitors.types,
-          toMeet: visitors.toMeet,
-          meetPersonEmail: visitors.meetPersonemail,
-          // date: moment.unix(Number(visitors.date)).format("YYYY/MM/DD"),
-          date: moment(Number(visitors.date)).format("DD/MM/YYYY"),
+        const formattedVisitorData = allVisitors.map((visitor: any) => ({
+          name: visitor.name,
+          email: visitor.email,
+          address: visitor.add,
+          phone: visitor.phone,
+          purpose: visitor.purpose,
+          types: visitor.types,
+          toMeet: visitor.toMeet,
+          meetPersonEmail: visitor.meetPersonemail,
+          date: moment(Number(visitor.date)).format("DD/MM/YYYY"),
         }));
 
-        console.log("formattedDate--", formattedVisitorData);
-
         setVisitorData(formattedVisitorData);
-        setFilteredData(formattedVisitorData); // Initially set filteredData to all visitor data
+        setFilteredData(formattedVisitorData);
       } catch (error) {
         console.error("Error fetching visitor data:", error);
       }
@@ -77,81 +67,63 @@ const TableOne = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true); // Set loading to true when fetching data
+      setLoading(true);
       const response = await axios.get(
         `http://localhost:8000/visitorRouter/pagination?page=${currentPage + 1}&pageSize=${itemsPerPage}&name=${searchName}&types=${searchTypes}&toMeet=${searchToMeet}`
       );
 
       const { visitors } = response.data;
       setVisitorData(visitors);
-      // setFilteredData(visitors);
-      setLoading(false); // Set loading to false after fetching data
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching visitor data:", error);
-      setLoading(false); // Set loading to false if an error occurs
+      setLoading(false);
     }
   };
 
-  const handleSearchNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    type: string
+  ) => {
     const value: string = e.target.value;
-    setSearchName(value);
-    filterData(value, searchTypes, searchToMeet);
-  };
-
-  const handleSearchTypesChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value: string = e.target.value;
-    setSearchTypes(value);
-    filterData(searchName, value, searchToMeet);
-  };
-
-  const handleSearchToMeetChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value: string = e.target.value;
-    setSearchToMeet(value);
-    filterData(searchName, searchTypes, value);
+    if (type === "name") setSearchName(value);
+    if (type === "types") setSearchTypes(value);
+    if (type === "toMeet") setSearchToMeet(value);
+    filterData(value, type);
   };
 
   const handleClearFilters = () => {
     setSearchName("");
     setSearchTypes("");
     setSearchToMeet("");
-    filterData("", "", ""); // Call filterData with empty parameters to clear filters
+    setFilteredData(visitorData);
+    setCurrentPage(0);
   };
 
-  const filterData = async (name: string, types: string, toMeet: string) => {
-    try {
-      setLoading(true);
+  const filterData = (value: string, type: string) => {
+    let filtered = visitorData;
 
-      const allEmpty = name === "" && types === "" && toMeet === "";
-
-      if (allEmpty) {
-        setFilteredData(visitorData);
-        setLoading(false);
-        return;
-      }
-
-      const response = await axios.post(
-        "http://localhost:8000/visitorRouter/filterdata",
-        {
-          name,
-          types,
-          toMeet,
-        }
+    if (type === "name") {
+      filtered = visitorData.filter((visitor) =>
+        visitor.name.toLowerCase().includes(value.toLowerCase())
       );
-
-      const { filteredData } = response.data;
-
-      // Update filtered data
-      setFilteredData(filteredData);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error filtering visitor data:", error);
-      setLoading(false);
+    } else if (type === "types") {
+      filtered = visitorData.filter((visitor) =>
+        visitor.types.toLowerCase().includes(value.toLowerCase())
+      );
+    } else if (type === "toMeet") {
+      filtered = visitorData.filter((visitor) =>
+        visitor.toMeet.toLowerCase().includes(value.toLowerCase())
+      );
     }
+
+    setFilteredData(filtered);
+    setCurrentPage(0);
   };
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, searchName, searchTypes, searchToMeet]);
+  }, [currentPage]);
 
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected);
@@ -226,7 +198,6 @@ const TableOne = () => {
     return printableContent;
   };
 
-  // Function to handle printing
   const handlePrint = () => {
     const content = preparePrintableContent();
     const printWindow = window.open("", "_blank");
@@ -246,36 +217,33 @@ const TableOne = () => {
         Visitor Details
       </h4>
 
-      {/* Search Inputs */}
       <div className="flex mb-4">
         <input
           type="text"
           placeholder="Search by name"
           value={searchName}
-          onChange={handleSearchNameChange}
+          onChange={(e) => handleSearchChange(e, "name")}
           className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-blue-500 "
         />
         <input
           type="text"
           placeholder="Search by visitor Types"
           value={searchTypes}
-          onChange={handleSearchTypesChange}
+          onChange={(e) => handleSearchChange(e, "types")}
           className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-blue-500"
         />
         <input
           type="text"
           placeholder="Search by To Meet"
           value={searchToMeet}
-          onChange={handleSearchToMeetChange}
+          onChange={(e) => handleSearchChange(e, "toMeet")}
           className="mr-2 px-2 py-1 border rounded border-gray-300 focus:outline-none focus:border-gray-500"
         />
-        <button onClick={handleClearFilters}>Clear Filters</button>{" "}
-        {/* Add Clear Filters button */}
+        <button onClick={handleClearFilters}>Clear Filters</button>
       </div>
       <div className="overflow-x-auto ">
         <table className="w-full bg-gray-200 border border-gray-200">
-          {/* Table Headers */}
-          <thead className="">
+          <thead>
             <tr className="bg-blue-200 dark:bg-gray-900 text-black border-b border-black">
               <th className="border border-bodydark2 px-2 lg:px-4 py-2 lg:py-2 text-sm lg:text-base whitespace-nowrap">
                 ID
@@ -309,7 +277,6 @@ const TableOne = () => {
               </th>
             </tr>
           </thead>
-          {/* Table Body */}
           <tbody>
             {currentItems.map((visitor, index) => (
               <tr
@@ -352,7 +319,6 @@ const TableOne = () => {
         </table>
       </div>
 
-      {/* Pagination */}
       <ReactPaginate
         previousLabel={"<"}
         nextLabel={">"}
@@ -368,7 +334,6 @@ const TableOne = () => {
         breakClassName={"px-3 py-1 mr-2"}
       />
 
-      {/* Print table option  */}
       <div className="flex justify-end mb-4">
         <button
           onClick={handlePrint}

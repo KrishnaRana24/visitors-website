@@ -1,11 +1,12 @@
 "use client";
+import { useWindowSize } from "@/hooks/useWindowSize";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const router = useRouter();
-
+  const { isMobile } = useWindowSize();
   // Function to handle login based on user role
   const handleLogin = (role: any) => {
     if (role === "user") {
@@ -41,12 +42,7 @@ export default function HomePage() {
                   >
                     About
                   </Link>
-                  <Link
-                    href="/contact"
-                    className="text-blue-950 hover:bg-purple-900 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Contact
-                  </Link>
+
                   {/* Login Button */}
                   <div className="flex items-center">
                     <button
@@ -73,8 +69,9 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
+
       <div className="bg-gradient-to-r from-purple-500 to-indigo-600">
-        <div className="max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:px-8 text-center">
+        <div className="w-full mx-auto py-24 px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
             Welcome to VisitorVault
           </h1>
@@ -180,6 +177,22 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* visitor steps */}
+      <div className="text-center text-blue py-6">
+        <h2 className="text-3xl font-bold text-blue-950 mb-2">
+          How our <span className="text-purple-600">VisitorVault </span>
+          system works
+        </h2>
+      </div>
+      <div className="flex items-center mb-5">
+        <Image
+          src="/images/visitor_steps.jpg"
+          alt=""
+          width="1300"
+          height="600"
+        />
       </div>
 
       {/* action auth */}
