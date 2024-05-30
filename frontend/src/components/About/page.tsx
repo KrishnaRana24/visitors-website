@@ -43,7 +43,7 @@ export default function AboutPage() {
       </nav>
       <div className="bg-gray-100 py-16 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="bg-purple-200 rounded-lg shadow-lg p-8">
             <h1 className="text-3xl font-bold text-blue-950 mb-6 text-center">
               About Us
             </h1>
