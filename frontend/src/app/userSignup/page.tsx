@@ -16,9 +16,21 @@ import dotenv from "dotenv";
 
 dotenv.config();
 console.log(".env--", process.env.TEMP);
+interface Errors {
+  name?: string;
+  email?: string;
+  add?: string;
+  phone?: string;
+  purpose?: string;
+  types?: string;
+  toMeet?: string;
+  meetPersonemail?: string;
+  date?: string;
+}
 
 const VisitorAuth: React.FC = () => {
   const router = useRouter();
+  const [errors, setErrors] = useState<Errors>({});
   const [metaMaskWeb3, setMetaMaskWeb3] = useState<Web3 | null>(null);
   const [ganacheWeb3, setGanacheWeb3] = useState<Web3 | null>(null);
   const [loading, setLoading] = useState(false);
@@ -149,6 +161,22 @@ const VisitorAuth: React.FC = () => {
 
       console.log("Transaction hash:", tx.transactionHash);
 
+      const validateForm = () => {
+        let newErrors: Errors = {};
+        if (!visitingData.name) newErrors.name = "Name is required";
+        if (!visitingData.email) newErrors.email = "Email is required";
+        if (!visitingData.add) newErrors.add = "Address is required";
+        if (!visitingData.phone) newErrors.phone = "Phone number is required";
+        if (!visitingData.purpose) newErrors.purpose = "Purpose is required";
+        if (!visitingData.types) newErrors.types = "Type is required";
+        if (!visitingData.toMeet) newErrors.toMeet = "To meet is required";
+        if (!visitingData.meetPersonemail)
+          newErrors.meetPersonemail = "Meet person email is required";
+        if (!visitingData.date) newErrors.date = "Date is required";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+      };
       const otpResponse = await axios.post(
         "http://localhost:8000/otpRouter/generateOtp",
         {
@@ -196,6 +224,7 @@ const VisitorAuth: React.FC = () => {
                     className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                     required
                   />
+                  {errors.name && <p className="text-red-500">{errors.name}</p>}
                 </div>
                 <div>
                   <label
@@ -213,6 +242,9 @@ const VisitorAuth: React.FC = () => {
                     className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                     required
                   />
+                  {errors.email && (
+                    <p className="text-red-500">{errors.email}</p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -230,6 +262,7 @@ const VisitorAuth: React.FC = () => {
                     className="mt-1 p-3 border border-gray-300 rounded w-full resize-none focus:outline-none focus:ring focus:ring-blue-500"
                     required
                   ></textarea>
+                  {errors.add && <p className="text-red-500">{errors.add}</p>}
                 </div>
                 <div>
                   <label
@@ -267,6 +300,9 @@ const VisitorAuth: React.FC = () => {
                     className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                     required
                   />
+                  {errors.phone && (
+                    <p className="text-red-500">{errors.phone}</p>
+                  )}
                 </div>
               </form>
             </div>
@@ -289,6 +325,9 @@ const VisitorAuth: React.FC = () => {
                     className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                     required
                   />
+                  {errors.purpose && (
+                    <p className="text-red-500">{errors.purpose}</p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -313,6 +352,9 @@ const VisitorAuth: React.FC = () => {
                     <option value="job_applicant">Job applicant visitor</option>
                     <option value="regulatory">Regulatory visitors</option>
                   </select>
+                  {errors.types && (
+                    <p className="text-red-500">{errors.types}</p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -330,6 +372,9 @@ const VisitorAuth: React.FC = () => {
                     className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                     required
                   />
+                  {errors.toMeet && (
+                    <p className="text-red-500">{errors.toMeet}</p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -347,6 +392,9 @@ const VisitorAuth: React.FC = () => {
                     className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                     required
                   />
+                  {errors.meetPersonemail && (
+                    <p className="text-red-500">{errors.meetPersonemail}</p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -364,6 +412,7 @@ const VisitorAuth: React.FC = () => {
                     className="mt-1 p-3 border border-gray-300 rounded w-full focus:outline-none focus:ring focus:ring-blue-500"
                     required
                   />
+                  {errors.date && <p className="text-red-500">{errors.date}</p>}
                 </div>
                 <div>
                   <button
